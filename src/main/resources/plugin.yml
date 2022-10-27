@@ -1,0 +1,13 @@
+name: SimplyNicks
+version: '0.1.0'
+main: me.orbitium.SimplyNicks
+api-version: 1.19
+depend: [PlaceholderAPI]
+authors: [Orbit]
+
+commands:
+  name:
+    description: Reply directly to a private message.
+    usage: 'Usage: /<command> Name'
+    aliases:
+      - n
