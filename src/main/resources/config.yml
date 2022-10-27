@@ -1,0 +1,46 @@
+# Config for SimplyNicks
+
+messages:
+  nickChangedSuccessfullyMessage: "Your nickname changed as %simplynick_name%!"
+  nickChangedByModeratorMessage: "Your nickname changed as %simplynick_name% by a moderator!"
+  moderatorNickChangedMessage: "Changed the player's name as %simplynick_name%"
+
+  error:
+    colorPermissionErrorMessage: "Insufficient permission for use that color!"
+    permissionErrorMessage: "Insufficient permission for use that command!"
+    shortNickErrorMessage: "Your name is so short! Name must be contained 3 character"
+    longNickErrorMessage: "Your name is so long! A name can be maximum of 16 character."
+    playerCannotFoundErrorMessage: "Player must be online for that process."
+    nameAlreadyInUseMessage: "The name is already in use!"
+    nickFixedByOwnerMessage: "Your fake nickname changed to your original name (%simplynick_name%) because another player have that name!"
+
+
+permissions:
+  # Player can change own name
+  changeOwnName: changename
+
+  # Player can change other player's name
+  changeOthersName: changeothersname
+
+  # Player can access to list of defaultColors
+  accessColors: accesscolors
+
+
+countColorCodesAsCharacter: false
+# if that config if false player can use all colors who have OP
+OPColorPermissionCheck: false
+
+# Check here https://minecraft.fandom.com/wiki/Formatting_codes
+# All colors
+# Use & instead of §
+colors: [
+  "&a",
+  "&1",
+  "&2"
+]
+
+database:
+  url: jdbc:mysql://sql11.freesqldatabase.com:3306/sql11529327?autoReconnect=true&allowPublicKeyRetrieval=true&useSSL=false
+  username: sql11529327
+  password: 12dtmG45lC
+  playerNameStorageTableName: player_name
