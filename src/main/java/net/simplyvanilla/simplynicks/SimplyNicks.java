@@ -1,12 +1,12 @@
-package me.orbitium;
+package net.simplyvanilla.simplynicks;
 
 import java.util.List;
 import java.util.logging.Level;
-import me.orbitium.command.NameCommandExecutor;
-import me.orbitium.database.Cache;
-import me.orbitium.database.MYSQL;
-import me.orbitium.event.PlayerEvents;
-import me.orbitium.hook.PlaceholderAPIHook;
+import net.simplyvanilla.simplynicks.command.NickCommandExecutor;
+import net.simplyvanilla.simplynicks.database.Cache;
+import net.simplyvanilla.simplynicks.database.MYSQL;
+import net.simplyvanilla.simplynicks.event.PlayerEvents;
+import net.simplyvanilla.simplynicks.hook.PlaceholderAPIHook;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class SimplyNicks extends JavaPlugin {
@@ -27,7 +27,7 @@ public final class SimplyNicks extends JavaPlugin {
         (cache = new Cache()).initCache();
         (new PlaceholderAPIHook()).register();
         this.getServer().getPluginManager().registerEvents(new PlayerEvents(), this);
-        this.getCommand("name").setExecutor(new NameCommandExecutor());
+        this.getCommand("nick").setExecutor(new NickCommandExecutor());
         colors = this.getConfig().getStringList("colors");
     }
 

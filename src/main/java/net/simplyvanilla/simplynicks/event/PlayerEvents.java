@@ -1,8 +1,8 @@
-package me.orbitium.event;
+package net.simplyvanilla.simplynicks.event;
 
 import java.util.UUID;
 import me.clip.placeholderapi.PlaceholderAPI;
-import me.orbitium.SimplyNicks;
+import net.simplyvanilla.simplynicks.SimplyNicks;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;

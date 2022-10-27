@@ -43,7 +43,7 @@ colors: [
 ]
 
 database:
-  url: jdbc:mysql://sql11.freesqldatabase.com:3306/sql11529327?autoReconnect=true&allowPublicKeyRetrieval=true&useSSL=false
-  username: sql11529327
-  password: 12dtmG45lC
-  playerNameStorageTableName: player_name
+  url: jdbc:mysql://127.0.0.1:3306/simplynicks?autoReconnect=true&allowPublicKeyRetrieval=true&useSSL=false
+  username: user123
+  password: pass123
+  nickTableName: player_nick

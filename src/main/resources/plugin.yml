@@ -1,13 +1,14 @@
+main: net.simplyvanilla.simplynicks.SimplyNicks
 name: SimplyNicks
-version: '0.1.0'
-main: me.orbitium.SimplyNicks
+version: @version@
 api-version: 1.19
+
+author: Simply Vanilla
+website: https://github.com/SimplyVanilla/SimplyNicks
+
 depend: [PlaceholderAPI]
-authors: [Orbit]
 
 commands:
-  name:
-    description: Changes own/other's name.
-    usage: 'Usage: /<command> Name'
-    aliases:
-      - n
+  nick:
+    description: Change your nickname
+    usage: 'Usage: /<command> NICKNAME'
