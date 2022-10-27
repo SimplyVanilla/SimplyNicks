@@ -7,7 +7,7 @@ authors: [Orbit]
 
 commands:
   name:
-    description: Reply directly to a private message.
+    description: Changes own/other's name.
     usage: 'Usage: /<command> Name'
     aliases:
       - n
