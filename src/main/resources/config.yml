@@ -4,6 +4,9 @@ messages:
   nickChangedSuccessfullyMessage: "Your nickname changed as %simplynick_name%!"
   nickChangedByModeratorMessage: "Your nickname changed as %simplynick_name% by a moderator!"
   moderatorNickChangedMessage: "Changed the player's name as %simplynick_name%"
+  nickResettedMessage: "Your nickname changed to its original."
+  nickResettedMessageByModerator: "Your nickname changed to its original by a moderator."
+  moderatorNickResetMessage: "Player's nickname is resetted!"
 
   error:
     colorPermissionErrorMessage: "Insufficient permission for use that color!"
