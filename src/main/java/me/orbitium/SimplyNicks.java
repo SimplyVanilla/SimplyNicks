@@ -1,4 +1,3 @@
-/* Decompiler 3ms, total 654ms, lines 50 */
 package me.orbitium;
 
 import java.util.List;
