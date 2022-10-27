@@ -1,9 +1,9 @@
-package me.orbitium.database;
+package net.simplyvanilla.simplynicks.database;
 
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import me.orbitium.SimplyNicks;
+import net.simplyvanilla.simplynicks.SimplyNicks;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
