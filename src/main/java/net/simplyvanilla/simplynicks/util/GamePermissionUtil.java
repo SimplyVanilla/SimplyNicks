@@ -14,7 +14,7 @@ public class GamePermissionUtil {
             return true;
         } else if (colorGroup == NickValidationUtil.ColorGroup.DEFAULT && (
             hasPermission(sender, "simplynicks.colors.default") ||
-            hasPermission(sender, "simplynicks.colors.all")
+                hasPermission(sender, "simplynicks.colors.all")
         )) {
             return true;
         } else return colorGroup == NickValidationUtil.ColorGroup.NONE;

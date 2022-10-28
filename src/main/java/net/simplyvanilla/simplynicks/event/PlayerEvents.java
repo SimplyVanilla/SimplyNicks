@@ -1,6 +1,5 @@
 package net.simplyvanilla.simplynicks.event;
 
-import java.util.UUID;
 import net.simplyvanilla.simplynicks.SimplyNicks;
 import net.simplyvanilla.simplynicks.util.MessageUtil;
 import org.bukkit.Bukkit;
@@ -11,30 +10,37 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerLoginEvent;
 
+import java.util.UUID;
+
 public class PlayerEvents implements Listener {
     @EventHandler(
-            priority = EventPriority.HIGHEST
+        priority = EventPriority.HIGHEST
     )
     public void onPlayerLogin(PlayerLoginEvent event) {
         Bukkit.getScheduler().runTaskLater(SimplyNicks.getInstance(), () -> {
-            if (!SimplyNicks.getCache().isNameAvailable(event.getPlayer().getUniqueId().toString(), event.getPlayer().getName())) {
-                OfflinePlayer fakeNamedPlayer = Bukkit.getOfflinePlayer(UUID.fromString(SimplyNicks.getCache().getUUIDByName(event.getPlayer().getName())));
-                if (fakeNamedPlayer.isOnline()) {
-                    fakeNamedPlayer.getPlayer().setDisplayName(fakeNamedPlayer.getName());
-                    MessageUtil.sendMessage(fakeNamedPlayer.getPlayer(), "messages.error.nickFixedByOwnerMessage");
+
+            // check if logging in player-name is clashing with existing nick -> prefer player-name over nick
+            if (!SimplyNicks.getCache().isNickAvailable(event.getPlayer().getName())) {
+
+                String matchedUUID = SimplyNicks.getCache().getUUIDByName(event.getPlayer().getName());
+                // nick belongs to a different UUID, force rename on nick-name
+                if (!matchedUUID.equals(event.getPlayer().getUniqueId().toString())) {
+                    OfflinePlayer nickNamedPlayer = Bukkit.getOfflinePlayer(UUID.fromString(matchedUUID));
+                    if (nickNamedPlayer.isOnline()) {
+                        nickNamedPlayer.getPlayer().setDisplayName(null);
+                        MessageUtil.sendMessage(nickNamedPlayer.getPlayer(), "messages.error.nickFixedByOwnerMessage");
+                    }
+
+                    SimplyNicks.getDatabase().removePlayerNameData(nickNamedPlayer.getPlayer());
                 }
-
-                SimplyNicks.getDatabase().updatePlayerNameData(fakeNamedPlayer.getUniqueId().toString(), fakeNamedPlayer.getName());
             }
 
+            // check if logging in player has user nick
             String name = SimplyNicks.getDatabase().getPlayerNameData(event.getPlayer().getUniqueId().toString());
-            if (name == null) {
-                name = event.getPlayer().getName();
+            if (name != null) {
+                SimplyNicks.getCache().addNick(event.getPlayer().getUniqueId().toString(), name);
+                event.getPlayer().setDisplayName(ChatColor.translateAlternateColorCodes('&', name));
             }
-
-            SimplyNicks.getCache().addNewName(event.getPlayer().getUniqueId().toString(), event.getPlayer().getName());
-            event.getPlayer().setDisplayName(ChatColor.translateAlternateColorCodes('&', name));
-            event.getPlayer().setCustomNameVisible(true);
         }, 1L);
     }
 }

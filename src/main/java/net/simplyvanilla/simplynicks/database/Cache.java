@@ -1,98 +1,52 @@
 package net.simplyvanilla.simplynicks.database;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
 import net.simplyvanilla.simplynicks.SimplyNicks;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
+import java.util.Map;
+
 public class Cache {
-    Map<String, String> names;
+    private Map<String, String> nicks;
 
     public void initCache() {
-        this.names = SimplyNicks.getDatabase().getAllNames();
+        this.nicks = SimplyNicks.getDatabase().getAllNames();
     }
 
-    public void addNewName(String uuid, String name) {
-        this.names.put(uuid, name);
+    public void addNick(String uuid, String nick) {
+        this.nicks.put(
+            uuid,
+            ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', nick))
+        );
     }
 
-    public void removeName(String uuid) {
-        this.names.remove(uuid);
+    public void removeNick(String uuid) {
+        this.nicks.remove(uuid);
     }
 
-    public String getName(String playerUUID) {
-        return (String)this.names.get(playerUUID);
-    }
+    public boolean isNickAvailable(String checkNick) {
+        if (this.nicks.containsValue(checkNick)) {
+            return false;
+        }
 
-    public boolean isNameAvailable(String name) {
-        name = ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', name));
-        Iterator var2 = this.names.entrySet().iterator();
-
-        Entry entry;
-        do {
-            if (!var2.hasNext()) {
-                var2 = Bukkit.getOnlinePlayers().iterator();
-
-                Player onlinePlayer;
-                do {
-                    if (!var2.hasNext()) {
-                        return true;
-                    }
-
-                    onlinePlayer = (Player)var2.next();
-                } while(!onlinePlayer.getName().equals(name));
-
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (player.getName().equals(checkNick)) {
                 return false;
             }
+        }
 
-            entry = (Entry)var2.next();
-        } while(!ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', (String)entry.getValue())).equals(name));
-
-        return false;
-    }
-
-    public boolean isNameAvailable(String UUID, String name) {
-        name = ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', name));
-        Iterator var3 = this.names.entrySet().iterator();
-
-        Entry entry;
-        do {
-            if (!var3.hasNext()) {
-                var3 = Bukkit.getOnlinePlayers().iterator();
-
-                Player onlinePlayer;
-                do {
-                    if (!var3.hasNext()) {
-                        return true;
-                    }
-
-                    onlinePlayer = (Player)var3.next();
-                } while(!onlinePlayer.getName().equals(name) || onlinePlayer.getUniqueId().toString().equals(UUID));
-
-                return false;
-            }
-
-            entry = (Entry)var3.next();
-        } while(!ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', (String)entry.getValue())).equals(name) || ((String)entry.getKey()).equals(UUID));
-
-        return false;
+        return true;
     }
 
     public String getUUIDByName(String name) {
-        Iterator var2 = this.names.entrySet().iterator();
 
-        Entry entry;
-        do {
-            if (!var2.hasNext()) {
-                throw new NullPointerException("There is no UUID about " + name);
+        for (var entry : this.nicks.entrySet()) {
+            if (entry.getValue().equals(name)) {
+                return entry.getKey();
             }
+        }
 
-            entry = (Entry)var2.next();
-        } while(!ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', (String)entry.getValue())).equals(name));
-
-        return (String)entry.getKey();
+        return null;
     }
 }

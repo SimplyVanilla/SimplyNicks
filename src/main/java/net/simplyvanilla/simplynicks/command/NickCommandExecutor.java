@@ -20,7 +20,7 @@ public class NickCommandExecutor implements CommandExecutor {
         Player player;
 
         if (args.length == 1 && sender instanceof Player) {
-            player = (Player)sender;
+            player = (Player) sender;
 
             if (!GamePermissionUtil.hasPermission(sender, "simplynicks.changenick")) {
                 MessageUtil.sendMessage(sender, "messages.error.permissionErrorMessage");
@@ -47,7 +47,7 @@ public class NickCommandExecutor implements CommandExecutor {
                 return true;
             }
 
-            if (!SimplyNicks.getCache().isNameAvailable(args[0])) {
+            if (!SimplyNicks.getCache().isNickAvailable(args[0])) {
                 MessageUtil.sendMessage(sender, "messages.error.nameAlreadyInUseMessage");
                 return true;
             }
@@ -87,7 +87,7 @@ public class NickCommandExecutor implements CommandExecutor {
                 return true;
             }
 
-            if (!SimplyNicks.getCache().isNameAvailable(args[1])) {
+            if (!SimplyNicks.getCache().isNickAvailable(args[1])) {
                 MessageUtil.sendMessage(sender, "messages.error.nameAlreadyInUseMessage");
                 return true;
             }

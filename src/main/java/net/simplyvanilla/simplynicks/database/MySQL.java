@@ -1,34 +1,27 @@
 package net.simplyvanilla.simplynicks.database;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import net.simplyvanilla.simplynicks.SimplyNicks;
+import org.bukkit.entity.Player;
+
+import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.logging.Level;
-import net.simplyvanilla.simplynicks.SimplyNicks;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
 
-public class MYSQL {
+public class MySQL {
     SimplyNicks plugin = SimplyNicks.getInstance();
     String tableName;
     Connection connection;
     Statement statement;
 
-    public MYSQL() {
+    public MySQL() {
         this.tableName = this.plugin.getConfig().getString("database.nickTableName");
     }
 
     public synchronized void connect() {
         try {
-            this.plugin.getLogger().log(Level.INFO, "Connecting to MYSQL server, please wait...");
+            this.plugin.getLogger().log(Level.INFO, "Connecting to MySQL server, please wait...");
             this.connection = DriverManager.getConnection(
                 Objects.requireNonNull(this.plugin.getConfig().getString("database.url")),
                 this.plugin.getConfig().getString("database.username"),
@@ -37,19 +30,19 @@ public class MYSQL {
 
             String tableCheckQuery = String.format(
                 """
-                    CREATE TABLE IF NOT EXISTS `%s` (
-                        `id` int unsigned NOT NULL AUTO_INCREMENT,
-                        `uuid` char(36) NOT NULL,
-                        `nick` varchar(256) NOT NULL,
-                        `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                        `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                        PRIMARY KEY (`id`),
-                         UNIQUE KEY `uuid` (`uuid`)
-                    )
-                """, this.tableName);
+                        CREATE TABLE IF NOT EXISTS `%s` (
+                            `id` int unsigned NOT NULL AUTO_INCREMENT,
+                            `uuid` char(36) NOT NULL,
+                            `nick` varchar(256) NOT NULL,
+                            `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                            `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                            PRIMARY KEY (`id`),
+                             UNIQUE KEY `uuid` (`uuid`)
+                        )
+                    """, this.tableName);
 
             this.statement.executeUpdate(tableCheckQuery);
-            this.plugin.getLogger().log(Level.INFO, "Connected to the MYSQL server!");
+            this.plugin.getLogger().log(Level.INFO, "Connected to the MySQL server!");
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -69,10 +62,8 @@ public class MYSQL {
         try {
             ResultSet rs = this.statement.executeQuery(query);
 
-            while(rs.next()) {
-                names.put(
-                    rs.getString("uuid"),
-                    ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', rs.getString("nick"))));
+            while (rs.next()) {
+                SimplyNicks.getCache().addNick(rs.getString("uuid"), rs.getString("nick"));
             }
         } catch (Exception ex) {
             this.plugin.getLogger().log(Level.SEVERE, "Unable to getPlayerNameData...");
@@ -97,13 +88,7 @@ public class MYSQL {
             ex.printStackTrace();
         }
 
-        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(UUID.fromString(playerUUID));
-        if (offlinePlayer.getName() == null) {
-            throw new NullPointerException();
-        } else {
-            this.updatePlayerNameData(playerUUID, offlinePlayer.getName());
-            return offlinePlayer.getName();
-        }
+        return null;
     }
 
     public void updatePlayerNameData(Player player, String newName) {
@@ -113,9 +98,9 @@ public class MYSQL {
     public void updatePlayerNameData(String playerUUID, String newName) {
         String playerListUpdateQuery = String.format(
             """
-                INSERT INTO `%s` (`uuid`, `nick`) VALUES (?, ?)
-                ON DUPLICATE KEY UPDATE `nick` = VALUES(`nick`), `updated_at` = CURRENT_TIMESTAMP
-            """, this.tableName);
+                    INSERT INTO `%s` (`uuid`, `nick`) VALUES (?, ?)
+                    ON DUPLICATE KEY UPDATE `nick` = VALUES(`nick`), `updated_at` = CURRENT_TIMESTAMP
+                """, this.tableName);
 
         try {
             PreparedStatement playerListUpdateQueryPS = this.connection.prepareStatement(playerListUpdateQuery);
@@ -127,8 +112,8 @@ public class MYSQL {
             ex.printStackTrace();
         }
 
-        SimplyNicks.getCache().removeName(playerUUID);
-        SimplyNicks.getCache().addNewName(playerUUID, newName);
+        SimplyNicks.getCache().removeNick(playerUUID);
+        SimplyNicks.getCache().addNick(playerUUID, newName);
     }
 
     public void removePlayerNameData(Player player) {
@@ -143,14 +128,14 @@ public class MYSQL {
             ex.printStackTrace();
         }
 
-        SimplyNicks.getCache().removeName(player.getUniqueId().toString());
+        SimplyNicks.getCache().removeNick(player.getUniqueId().toString());
     }
 
     public void close() {
         try {
             this.connection.close();
         } catch (Exception ex) {
-            this.plugin.getLogger().log(Level.INFO, "MYSQL database is closing...");
+            this.plugin.getLogger().log(Level.INFO, "MySQL database is closing...");
             ex.printStackTrace();
         }
 
