@@ -1,10 +1,8 @@
 package net.simplyvanilla.simplynicks.command;
 
-import java.util.Objects;
-
-import me.clip.placeholderapi.PlaceholderAPI;
 import net.simplyvanilla.simplynicks.SimplyNicks;
 import net.simplyvanilla.simplynicks.util.GamePermissionUtil;
+import net.simplyvanilla.simplynicks.util.MessageUtil;
 import net.simplyvanilla.simplynicks.util.NickValidationUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -25,40 +23,41 @@ public class NickCommandExecutor implements CommandExecutor {
             player = (Player)sender;
 
             if (!GamePermissionUtil.hasPermission(sender, "simplynicks.changenick")) {
-                sender.sendMessage(Objects.requireNonNull(this.config.getString("messages.error.permissionErrorMessage")));
+                MessageUtil.sendMessage(sender, "messages.error.permissionErrorMessage");
                 return true;
             }
 
             if (args[0].equals("reset")) {
                 SimplyNicks.getDatabase().removePlayerNameData(player);
                 player.setDisplayName(null);
-                sender.sendMessage(ChatColor.translateAlternateColorCodes('&', PlaceholderAPI.setPlaceholders(player, Objects.requireNonNull(this.config.getString("messages.nickResettedMessage")))));
+                MessageUtil.sendMessage(sender, "messages.nickResetMessage");
                 return true;
             }
 
-            if (!NickValidationUtil.isValidNick(args[0], this.config.getBoolean("countColorCodesAsCharacter"))) {
-                sender.sendMessage(Objects.requireNonNull(this.config.getString("messages.error.nickValidationErrorMessage")));
+            if (!NickValidationUtil.isValidNick(args[0])) {
+                MessageUtil.sendMessage(sender, "messages.error.nickValidationErrorMessage");
                 return true;
             }
+
+            SimplyNicks.getInstance().getLogger().info(NickValidationUtil.getColorGroup(args[0], this.config.getStringList("colors")).toString());
 
             if (!GamePermissionUtil.hasColorPermission(
                 sender, NickValidationUtil.getColorGroup(args[0], this.config.getStringList("colors")))) {
-                sender.sendMessage(Objects.requireNonNull(this.config.getString("messages.error.colorPermissionErrorMessage")));
+                MessageUtil.sendMessage(sender, "messages.error.colorPermissionErrorMessage");
                 return true;
             }
 
             if (!SimplyNicks.getCache().isNameAvailable(args[0])) {
-                sender.sendMessage(Objects.requireNonNull(this.config.getString("messages.error.nameAlreadyInUseMessage")));
+                MessageUtil.sendMessage(sender, "messages.error.nameAlreadyInUseMessage");
                 return true;
             }
 
-            SimplyNicks.getDatabase().updatePlayerNameData(player, args[0]);
-            player.setDisplayName(ChatColor.translateAlternateColorCodes('&', args[0]));
-            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', PlaceholderAPI.setPlaceholders(player, Objects.requireNonNull(this.config.getString("messages.nickChangedSuccessfullyMessage")))));
+            setNick(player, args[0]);
+            MessageUtil.sendMessage(sender, "messages.nickChangedSuccessfullyMessage", args[0]);
 
         } else if (args.length == 2) {
             if (!GamePermissionUtil.hasPermission(sender, "simplynicks.changeothers")) {
-                sender.sendMessage(Objects.requireNonNull(this.config.getString("messages.error.permissionErrorMessage")));
+                MessageUtil.sendMessage(sender, "messages.error.permissionErrorMessage");
                 return true;
             }
 
@@ -67,38 +66,44 @@ public class NickCommandExecutor implements CommandExecutor {
             if (args[1].equals("reset")) {
                 SimplyNicks.getDatabase().removePlayerNameData(player);
                 player.setDisplayName(null);
-                player.sendMessage(ChatColor.translateAlternateColorCodes('&', PlaceholderAPI.setPlaceholders(player, Objects.requireNonNull(this.config.getString("messages.nickResettedMessageByModerator")))));
-                sender.sendMessage(ChatColor.translateAlternateColorCodes('&', PlaceholderAPI.setPlaceholders(player, Objects.requireNonNull(this.config.getString("messages.moderatorNickResetMessage")))));
+                MessageUtil.sendMessage(player, "messages.nickResetMessageByModerator");
+                MessageUtil.sendMessage(sender, "messages.moderatorNickResetMessage");
                 return true;
             }
 
             if (player == null) {
-                sender.sendMessage(Objects.requireNonNull(this.config.getString("messages.error.playerCannotFoundErrorMessage")));
+                MessageUtil.sendMessage(sender, "messages.error.playerCannotFoundErrorMessage");
                 return true;
             }
 
-            if (!NickValidationUtil.isValidNick(args[1], this.config.getBoolean("countColorCodesAsCharacter"))) {
-                sender.sendMessage(Objects.requireNonNull(this.config.getString("messages.error.nickValidationErrorMessage")));
+            if (!NickValidationUtil.isValidNick(args[1])) {
+                MessageUtil.sendMessage(sender, "messages.error.nickValidationErrorMessage");
                 return true;
             }
 
             if (!GamePermissionUtil.hasColorPermission(
                 sender, NickValidationUtil.getColorGroup(args[1], this.config.getStringList("colors")))) {
-                sender.sendMessage(Objects.requireNonNull(this.config.getString("messages.error.colorPermissionErrorMessage")));
+                MessageUtil.sendMessage(sender, "messages.error.colorPermissionErrorMessage");
                 return true;
             }
 
             if (!SimplyNicks.getCache().isNameAvailable(args[1])) {
-                sender.sendMessage(Objects.requireNonNull(this.config.getString("messages.error.nameAlreadyInUseMessage")));
+                MessageUtil.sendMessage(sender, "messages.error.nameAlreadyInUseMessage");
                 return true;
             }
 
-            SimplyNicks.getDatabase().updatePlayerNameData(player, args[1]);
-            player.setDisplayName(ChatColor.translateAlternateColorCodes('&', args[1]));
-            player.sendMessage(ChatColor.translateAlternateColorCodes('&', PlaceholderAPI.setPlaceholders(player, Objects.requireNonNull(this.config.getString("messages.nickChangedByModeratorMessage")))));
-            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', PlaceholderAPI.setPlaceholders(player, Objects.requireNonNull(this.config.getString("messages.moderatorNickChangedMessage")))));
+            setNick(player, args[1]);
+            MessageUtil.sendMessage(player, "messages.nickChangedByModeratorMessage", args[1]);
+            MessageUtil.sendMessage(sender, "messages.moderatorNickChangedMessage", args[1]);
         }
 
         return true;
+    }
+
+    private static void setNick(Player player, String nick) {
+        nick = nick.replaceAll("(&r)+$", "");
+        nick += "&r";
+        SimplyNicks.getDatabase().updatePlayerNameData(player, nick);
+        player.setDisplayName(ChatColor.translateAlternateColorCodes('&', nick));
     }
 }

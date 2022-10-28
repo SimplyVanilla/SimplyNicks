@@ -1,8 +1,8 @@
 package net.simplyvanilla.simplynicks.event;
 
 import java.util.UUID;
-import me.clip.placeholderapi.PlaceholderAPI;
 import net.simplyvanilla.simplynicks.SimplyNicks;
+import net.simplyvanilla.simplynicks.util.MessageUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -21,7 +21,7 @@ public class PlayerEvents implements Listener {
                 OfflinePlayer fakeNamedPlayer = Bukkit.getOfflinePlayer(UUID.fromString(SimplyNicks.getCache().getUUIDByName(event.getPlayer().getName())));
                 if (fakeNamedPlayer.isOnline()) {
                     fakeNamedPlayer.getPlayer().setDisplayName(fakeNamedPlayer.getName());
-                    fakeNamedPlayer.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', PlaceholderAPI.setPlaceholders(fakeNamedPlayer.getPlayer(), SimplyNicks.getInstance().getConfig().getString("messages.error.nickFixedByOwnerMessage"))));
+                    MessageUtil.sendMessage(fakeNamedPlayer.getPlayer(), "messages.error.nickFixedByOwnerMessage");
                 }
 
                 SimplyNicks.getDatabase().updatePlayerNameData(fakeNamedPlayer.getUniqueId().toString(), fakeNamedPlayer.getName());
