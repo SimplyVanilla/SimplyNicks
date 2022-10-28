@@ -23,7 +23,7 @@ public class MYSQL {
     Statement statement;
 
     public MYSQL() {
-        this.tableName = this.plugin.getConfig().getString("database.player_nick");
+        this.tableName = this.plugin.getConfig().getString("database.nickTableName");
     }
 
     public synchronized void connect() {
@@ -64,7 +64,7 @@ public class MYSQL {
 
     public Map<String, String> getAllNames() {
         Map<String, String> names = new HashMap<>();
-        String query = String.format("Select * from %s", this.tableName);
+        String query = String.format("SELECT * FROM `%s`", this.tableName);
 
         try {
             ResultSet rs = this.statement.executeQuery(query);
@@ -72,7 +72,7 @@ public class MYSQL {
             while(rs.next()) {
                 names.put(
                     rs.getString("uuid"),
-                    ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', rs.getString("name"))));
+                    ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', rs.getString("nick"))));
             }
         } catch (Exception ex) {
             this.plugin.getLogger().log(Level.SEVERE, "Unable to getPlayerNameData...");
@@ -113,8 +113,8 @@ public class MYSQL {
     public void updatePlayerNameData(String playerUUID, String newName) {
         String playerListUpdateQuery = String.format(
             """
-                INSERT INTO `%s` (`uuid`, `name`) VALUES (?, ?)
-                ON DUPLICATE KEY UPDATE `name` = VALUES(`name`), `updated_at` = CURRENT_TIMESTAMP
+                INSERT INTO `%s` (`uuid`, `nick`) VALUES (?, ?)
+                ON DUPLICATE KEY UPDATE `nick` = VALUES(`nick`), `updated_at` = CURRENT_TIMESTAMP
             """, this.tableName);
 
         try {
@@ -122,13 +122,28 @@ public class MYSQL {
             playerListUpdateQueryPS.setString(1, playerUUID);
             playerListUpdateQueryPS.setString(2, newName);
             playerListUpdateQueryPS.executeUpdate();
-        } catch (Exception var5) {
+        } catch (Exception ex) {
             this.plugin.getLogger().log(Level.SEVERE, "Unable to updatePlayerNameData...");
-            var5.printStackTrace();
+            ex.printStackTrace();
         }
 
         SimplyNicks.getCache().removeName(playerUUID);
         SimplyNicks.getCache().addNewName(playerUUID, newName);
+    }
+
+    public void removePlayerNameData(Player player) {
+        String playerListUpdateQuery = String.format("DELETE FROM `%s` WHERE `uuid` = ?", this.tableName);
+
+        try {
+            PreparedStatement playerListUpdateQueryPS = this.connection.prepareStatement(playerListUpdateQuery);
+            playerListUpdateQueryPS.setString(1, player.getUniqueId().toString());
+            playerListUpdateQueryPS.executeUpdate();
+        } catch (Exception ex) {
+            this.plugin.getLogger().log(Level.SEVERE, "Unable to removePlayerNameData...");
+            ex.printStackTrace();
+        }
+
+        SimplyNicks.getCache().removeName(player.getUniqueId().toString());
     }
 
     public void close() {

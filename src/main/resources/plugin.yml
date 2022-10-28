@@ -6,9 +6,26 @@ api-version: 1.19
 author: Simply Vanilla
 website: https://github.com/SimplyVanilla/SimplyNicks
 
-depend: [PlaceholderAPI]
-
 commands:
   nick:
     description: Change your nickname
-    usage: 'Usage: /<command> NICKNAME'
+    usage: |
+      /nick NICKNAME - set your nickname
+      /nick reset - reset your nickname
+    permission: simplynicks.changenick
+
+simplynicks.changenick:
+  description: whether the player can change their own nick
+  default: false
+
+simplynicks.colors.default:
+  description: whether the player can use default colors in their nick
+  default: false
+
+simplynicks.colors.all:
+  description: whether the player can use all colors in their nick
+  default: false
+
+simplynicks.changeothers:
+  description: whether the player can change other player nick
+  default: op

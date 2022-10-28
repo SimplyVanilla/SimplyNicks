@@ -6,7 +6,6 @@ import net.simplyvanilla.simplynicks.command.NickCommandExecutor;
 import net.simplyvanilla.simplynicks.database.Cache;
 import net.simplyvanilla.simplynicks.database.MYSQL;
 import net.simplyvanilla.simplynicks.event.PlayerEvents;
-import net.simplyvanilla.simplynicks.hook.PlaceholderAPIHook;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class SimplyNicks extends JavaPlugin {
@@ -17,15 +16,10 @@ public final class SimplyNicks extends JavaPlugin {
 
     public void onEnable() {
         this.saveDefaultConfig();
-        if (this.getServer().getPluginManager().getPlugin("PlaceholderAPI") == null) {
-            this.getLogger().log(Level.SEVERE, "Could not find PlaceholderAPI! This plugin is required.");
-            this.getServer().getPluginManager().disablePlugin(this);
-        }
 
         instance = this;
         (database = new MYSQL()).connect();
         (cache = new Cache()).initCache();
-        (new PlaceholderAPIHook()).register();
         this.getServer().getPluginManager().registerEvents(new PlayerEvents(), this);
         this.getCommand("nick").setExecutor(new NickCommandExecutor());
         colors = this.getConfig().getStringList("colors");
