@@ -5,13 +5,16 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class Cache {
-    private Map<String, String> nicks;
+    private Map<String, String> nicks = new HashMap<>();
 
     public void initCache() {
-        this.nicks = SimplyNicks.getDatabase().getAllNames();
+        for (var entry : SimplyNicks.getDatabase().getAllNicks().entrySet()) {
+            addNick(entry.getKey(), entry.getValue());
+        }
     }
 
     public void addNick(String uuid, String nick) {
@@ -39,10 +42,10 @@ public class Cache {
         return true;
     }
 
-    public String getUUIDByName(String name) {
+    public String getUUIDByNick(String nick) {
 
         for (var entry : this.nicks.entrySet()) {
-            if (entry.getValue().equals(name)) {
+            if (entry.getValue().equals(nick)) {
                 return entry.getKey();
             }
         }

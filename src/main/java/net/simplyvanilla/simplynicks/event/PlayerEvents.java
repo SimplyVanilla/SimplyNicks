@@ -22,7 +22,7 @@ public class PlayerEvents implements Listener {
             // check if logging in player-name is clashing with existing nick -> prefer player-name over nick
             if (!SimplyNicks.getCache().isNickAvailable(event.getPlayer().getName())) {
 
-                String matchedUUID = SimplyNicks.getCache().getUUIDByName(event.getPlayer().getName());
+                String matchedUUID = SimplyNicks.getCache().getUUIDByNick(event.getPlayer().getName());
                 // nick belongs to a different UUID, force rename on nick-name
                 if (!matchedUUID.equals(event.getPlayer().getUniqueId().toString())) {
                     OfflinePlayer nickNamedPlayer = Bukkit.getOfflinePlayer(UUID.fromString(matchedUUID));
@@ -31,15 +31,22 @@ public class PlayerEvents implements Listener {
                         MessageUtil.sendMessage(nickNamedPlayer.getPlayer(), "messages.error.nickFixedByOwnerMessage");
                     }
 
-                    SimplyNicks.getDatabase().removePlayerNameData(nickNamedPlayer.getPlayer());
+                    SimplyNicks.getDatabase().removePlayerNickData(nickNamedPlayer.getPlayer());
+                    SimplyNicks.getInstance().getLogger().info(
+                        String.format(
+                            "%s name colliding with %s's nick, resetting...",
+                            event.getPlayer().getName(),
+                            nickNamedPlayer.getPlayer().getName()
+                        )
+                    );
                 }
             }
 
             // check if logging in player has user nick
-            String name = SimplyNicks.getDatabase().getPlayerNameData(event.getPlayer().getUniqueId().toString());
-            if (name != null) {
-                SimplyNicks.getCache().addNick(event.getPlayer().getUniqueId().toString(), name);
-                event.getPlayer().setDisplayName(ChatColor.translateAlternateColorCodes('&', name));
+            String nick = SimplyNicks.getDatabase().getPlayerNickData(event.getPlayer().getUniqueId().toString());
+            if (nick != null) {
+                SimplyNicks.getCache().addNick(event.getPlayer().getUniqueId().toString(), nick);
+                event.getPlayer().setDisplayName(ChatColor.translateAlternateColorCodes('&', nick));
             }
         }, 1L);
     }

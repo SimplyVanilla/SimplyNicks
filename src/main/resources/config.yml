@@ -3,7 +3,7 @@
 messages:
   nickChangedSuccessfullyMessage: Your nick changed to [nick].
   nickChangedByModeratorMessage: A moderator changed your nick to [nick].
-  moderatorNickChangedMessage: Changed the player's name to [nick].
+  moderatorNickChangedMessage: Changed the player's nick to [nick].
   nickResetMessage: Your nick has been reset.
   nickResetMessageByModerator: A moderator reset your nick.
   moderatorNickResetMessage: Player's nick has been reset.
@@ -13,7 +13,7 @@ messages:
     permissionErrorMessage: Insufficient permission to change nick.
     nickValidationErrorMessage: Your nick needs to be between 3 and 16 characters and not contain special characters.
     playerCannotFoundErrorMessage: Player must be online.
-    nameAlreadyInUseMessage: Nick already in use.
+    nickAlreadyInUseMessage: Nick already in use.
     nickFixedByOwnerMessage: Your nick has been reset due to naming collision.
 
 # Check here https://minecraft.fandom.com/wiki/Formatting_codes

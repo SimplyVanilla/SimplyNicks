@@ -55,25 +55,25 @@ public class MySQL {
 
     }
 
-    public Map<String, String> getAllNames() {
-        Map<String, String> names = new HashMap<>();
+    public Map<String, String> getAllNicks() {
+        Map<String, String> nicks = new HashMap<>();
         String query = String.format("SELECT * FROM `%s`", this.tableName);
 
         try {
             ResultSet rs = this.statement.executeQuery(query);
 
             while (rs.next()) {
-                SimplyNicks.getCache().addNick(rs.getString("uuid"), rs.getString("nick"));
+                nicks.put(rs.getString("uuid"), rs.getString("nick"));
             }
         } catch (Exception ex) {
-            this.plugin.getLogger().log(Level.SEVERE, "Unable to getPlayerNameData...");
+            this.plugin.getLogger().log(Level.SEVERE, "Unable to getAllNicks...");
             ex.printStackTrace();
         }
 
-        return names;
+        return nicks;
     }
 
-    public String getPlayerNameData(String playerUUID) {
+    public String getPlayerNickData(String playerUUID) {
         String playerSearchQuery = String.format("SELECT * FROM `%s` WHERE `uuid` = ?", this.tableName);
 
         try {
@@ -84,18 +84,18 @@ public class MySQL {
                 return rs.getString("nick");
             }
         } catch (Exception ex) {
-            this.plugin.getLogger().log(Level.SEVERE, "Unable to getPlayerNameData...");
+            this.plugin.getLogger().log(Level.SEVERE, "Unable to getPlayerNickData...");
             ex.printStackTrace();
         }
 
         return null;
     }
 
-    public void updatePlayerNameData(Player player, String newName) {
-        this.updatePlayerNameData(player.getUniqueId().toString(), newName);
+    public void updatePlayerNickData(Player player, String nick) {
+        this.updatePlayerNickData(player.getUniqueId().toString(), nick);
     }
 
-    public void updatePlayerNameData(String playerUUID, String newName) {
+    public void updatePlayerNickData(String playerUUID, String nick) {
         String playerListUpdateQuery = String.format(
             """
                     INSERT INTO `%s` (`uuid`, `nick`) VALUES (?, ?)
@@ -105,18 +105,18 @@ public class MySQL {
         try {
             PreparedStatement playerListUpdateQueryPS = this.connection.prepareStatement(playerListUpdateQuery);
             playerListUpdateQueryPS.setString(1, playerUUID);
-            playerListUpdateQueryPS.setString(2, newName);
+            playerListUpdateQueryPS.setString(2, nick);
             playerListUpdateQueryPS.executeUpdate();
         } catch (Exception ex) {
-            this.plugin.getLogger().log(Level.SEVERE, "Unable to updatePlayerNameData...");
+            this.plugin.getLogger().log(Level.SEVERE, "Unable to updatePlayerNickData...");
             ex.printStackTrace();
         }
 
         SimplyNicks.getCache().removeNick(playerUUID);
-        SimplyNicks.getCache().addNick(playerUUID, newName);
+        SimplyNicks.getCache().addNick(playerUUID, nick);
     }
 
-    public void removePlayerNameData(Player player) {
+    public void removePlayerNickData(Player player) {
         String playerListUpdateQuery = String.format("DELETE FROM `%s` WHERE `uuid` = ?", this.tableName);
 
         try {
@@ -124,7 +124,7 @@ public class MySQL {
             playerListUpdateQueryPS.setString(1, player.getUniqueId().toString());
             playerListUpdateQueryPS.executeUpdate();
         } catch (Exception ex) {
-            this.plugin.getLogger().log(Level.SEVERE, "Unable to removePlayerNameData...");
+            this.plugin.getLogger().log(Level.SEVERE, "Unable to removePlayerNickData...");
             ex.printStackTrace();
         }
 

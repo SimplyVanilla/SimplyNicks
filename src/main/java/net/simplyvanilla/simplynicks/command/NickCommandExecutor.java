@@ -28,8 +28,7 @@ public class NickCommandExecutor implements CommandExecutor {
             }
 
             if (args[0].equals("reset")) {
-                SimplyNicks.getDatabase().removePlayerNameData(player);
-                player.setDisplayName(null);
+                resetNick(player);
                 MessageUtil.sendMessage(sender, "messages.nickResetMessage");
                 return true;
             }
@@ -39,16 +38,14 @@ public class NickCommandExecutor implements CommandExecutor {
                 return true;
             }
 
-            SimplyNicks.getInstance().getLogger().info(NickValidationUtil.getColorGroup(args[0], this.config.getStringList("colors")).toString());
-
             if (!GamePermissionUtil.hasColorPermission(
-                sender, NickValidationUtil.getColorGroup(args[0], this.config.getStringList("colors")))) {
+                sender, NickValidationUtil.getColorGroup(args[0], SimplyNicks.colors))) {
                 MessageUtil.sendMessage(sender, "messages.error.colorPermissionErrorMessage");
                 return true;
             }
 
             if (!SimplyNicks.getCache().isNickAvailable(args[0])) {
-                MessageUtil.sendMessage(sender, "messages.error.nameAlreadyInUseMessage");
+                MessageUtil.sendMessage(sender, "messages.error.nickAlreadyInUseMessage");
                 return true;
             }
 
@@ -64,8 +61,7 @@ public class NickCommandExecutor implements CommandExecutor {
             player = Bukkit.getPlayer(args[0]);
 
             if (args[1].equals("reset")) {
-                SimplyNicks.getDatabase().removePlayerNameData(player);
-                player.setDisplayName(null);
+                resetNick(player);
                 MessageUtil.sendMessage(player, "messages.nickResetMessageByModerator");
                 MessageUtil.sendMessage(sender, "messages.moderatorNickResetMessage");
                 return true;
@@ -82,13 +78,13 @@ public class NickCommandExecutor implements CommandExecutor {
             }
 
             if (!GamePermissionUtil.hasColorPermission(
-                sender, NickValidationUtil.getColorGroup(args[1], this.config.getStringList("colors")))) {
+                sender, NickValidationUtil.getColorGroup(args[1], SimplyNicks.colors))) {
                 MessageUtil.sendMessage(sender, "messages.error.colorPermissionErrorMessage");
                 return true;
             }
 
             if (!SimplyNicks.getCache().isNickAvailable(args[1])) {
-                MessageUtil.sendMessage(sender, "messages.error.nameAlreadyInUseMessage");
+                MessageUtil.sendMessage(sender, "messages.error.nickAlreadyInUseMessage");
                 return true;
             }
 
@@ -103,7 +99,12 @@ public class NickCommandExecutor implements CommandExecutor {
     private static void setNick(Player player, String nick) {
         nick = nick.replaceAll("(&r)+$", "");
         nick += "&r";
-        SimplyNicks.getDatabase().updatePlayerNameData(player, nick);
+        SimplyNicks.getDatabase().updatePlayerNickData(player, nick);
         player.setDisplayName(ChatColor.translateAlternateColorCodes('&', nick));
+    }
+
+    private static void resetNick(Player player) {
+        SimplyNicks.getDatabase().removePlayerNickData(player);
+        player.setDisplayName(null);
     }
 }

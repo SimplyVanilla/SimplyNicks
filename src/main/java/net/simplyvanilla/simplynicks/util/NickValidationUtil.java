@@ -18,8 +18,8 @@ public class NickValidationUtil {
 
     private static final String colorCodes = "0123456789AaBbCcDdEeFfKkLlMmNnOoRrXx";
 
-    public static ColorGroup getColorGroup(String name, List<String> defaultColors) {
-        char[] c = name.toCharArray();
+    public static ColorGroup getColorGroup(String nick, List<String> defaultColors) {
+        char[] c = nick.toCharArray();
 
         for (int i = 0; i < c.length - 1; i++) {
             if (c[i] == '&' && colorCodes.indexOf(c[i + 1]) > -1) {
@@ -34,9 +34,9 @@ public class NickValidationUtil {
         return ColorGroup.NONE;
     }
 
-    public static boolean isValidNick(String name) {
-        name = ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', name));
-        Matcher matcher = PATTERN.matcher(name);
+    public static boolean isValidNick(String nick) {
+        nick = ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', nick));
+        Matcher matcher = PATTERN.matcher(nick);
         return matcher.matches();
     }
 }
