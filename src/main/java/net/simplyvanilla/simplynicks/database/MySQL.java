@@ -7,6 +7,7 @@ import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.logging.Level;
 
 public class MySQL {
@@ -73,12 +74,12 @@ public class MySQL {
         return nicks;
     }
 
-    public String getPlayerNickData(String playerUUID) {
+    public String getPlayerNickData(UUID uuid) {
         String playerSearchQuery = String.format("SELECT * FROM `%s` WHERE `uuid` = ?", this.tableName);
 
         try {
             PreparedStatement playerSearchQueryPS = this.connection.prepareStatement(playerSearchQuery);
-            playerSearchQueryPS.setString(1, playerUUID);
+            playerSearchQueryPS.setString(1, uuid.toString());
             ResultSet rs = playerSearchQueryPS.executeQuery();
             if (rs.next()) {
                 return rs.getString("nick");
@@ -91,11 +92,7 @@ public class MySQL {
         return null;
     }
 
-    public void updatePlayerNickData(Player player, String nick) {
-        this.updatePlayerNickData(player.getUniqueId().toString(), nick);
-    }
-
-    public void updatePlayerNickData(String playerUUID, String nick) {
+    public void updatePlayerNickData(UUID uuid, String nick) {
         String playerListUpdateQuery = String.format(
             """
                     INSERT INTO `%s` (`uuid`, `nick`) VALUES (?, ?)
@@ -104,7 +101,7 @@ public class MySQL {
 
         try {
             PreparedStatement playerListUpdateQueryPS = this.connection.prepareStatement(playerListUpdateQuery);
-            playerListUpdateQueryPS.setString(1, playerUUID);
+            playerListUpdateQueryPS.setString(1, uuid.toString());
             playerListUpdateQueryPS.setString(2, nick);
             playerListUpdateQueryPS.executeUpdate();
         } catch (Exception ex) {
@@ -112,23 +109,23 @@ public class MySQL {
             ex.printStackTrace();
         }
 
-        SimplyNicks.getCache().removeNick(playerUUID);
-        SimplyNicks.getCache().addNick(playerUUID, nick);
+        SimplyNicks.getCache().removeNick(uuid.toString());
+        SimplyNicks.getCache().addNick(uuid.toString(), nick);
     }
 
-    public void removePlayerNickData(Player player) {
+    public void removePlayerNickData(UUID uuid) {
         String playerListUpdateQuery = String.format("DELETE FROM `%s` WHERE `uuid` = ?", this.tableName);
 
         try {
             PreparedStatement playerListUpdateQueryPS = this.connection.prepareStatement(playerListUpdateQuery);
-            playerListUpdateQueryPS.setString(1, player.getUniqueId().toString());
+            playerListUpdateQueryPS.setString(1, uuid.toString());
             playerListUpdateQueryPS.executeUpdate();
         } catch (Exception ex) {
             this.plugin.getLogger().log(Level.SEVERE, "Unable to removePlayerNickData...");
             ex.printStackTrace();
         }
 
-        SimplyNicks.getCache().removeNick(player.getUniqueId().toString());
+        SimplyNicks.getCache().removeNick(uuid.toString());
     }
 
     public void close() {

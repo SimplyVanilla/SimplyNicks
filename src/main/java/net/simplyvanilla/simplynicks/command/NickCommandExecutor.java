@@ -99,12 +99,12 @@ public class NickCommandExecutor implements CommandExecutor {
     private static void setNick(Player player, String nick) {
         nick = nick.replaceAll("(&r)+$", "");
         nick += "&r";
-        SimplyNicks.getDatabase().updatePlayerNickData(player, nick);
+        SimplyNicks.getDatabase().updatePlayerNickData(player.getUniqueId(), nick);
         player.setDisplayName(ChatColor.translateAlternateColorCodes('&', nick));
     }
 
     private static void resetNick(Player player) {
-        SimplyNicks.getDatabase().removePlayerNickData(player);
+        SimplyNicks.getDatabase().removePlayerNickData(player.getUniqueId());
         player.setDisplayName(null);
     }
 }

@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class Cache {
     private Map<String, String> nicks = new HashMap<>();
@@ -42,11 +43,11 @@ public class Cache {
         return true;
     }
 
-    public String getUUIDByNick(String nick) {
+    public UUID getUUIDByNick(String nick) {
 
         for (var entry : this.nicks.entrySet()) {
             if (entry.getValue().equals(nick)) {
-                return entry.getKey();
+                return UUID.fromString(entry.getKey());
             }
         }
 
