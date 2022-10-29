@@ -3,9 +3,9 @@ package net.simplyvanilla.simplynicks.command;
 import net.simplyvanilla.simplynicks.SimplyNicks;
 import net.simplyvanilla.simplynicks.util.GamePermissionUtil;
 import net.simplyvanilla.simplynicks.util.MessageUtil;
+import net.simplyvanilla.simplynicks.util.NickUtil;
 import net.simplyvanilla.simplynicks.util.NickValidationUtil;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -49,8 +49,9 @@ public class NickCommandExecutor implements CommandExecutor {
                 return true;
             }
 
-            setNick(player, args[0]);
-            MessageUtil.sendMessage(sender, "messages.nickChangedSuccessfullyMessage", args[0]);
+            if (setNick(player, args[0])) {
+                MessageUtil.sendMessage(sender, "messages.nickChangedSuccessfullyMessage", args[0]);
+            }
 
         } else if (args.length == 2) {
             if (!GamePermissionUtil.hasPermission(sender, "simplynicks.changeothers")) {
@@ -88,23 +89,26 @@ public class NickCommandExecutor implements CommandExecutor {
                 return true;
             }
 
-            setNick(player, args[1]);
-            MessageUtil.sendMessage(player, "messages.nickChangedByModeratorMessage", args[1]);
-            MessageUtil.sendMessage(sender, "messages.moderatorNickChangedMessage", args[1]);
+            if (setNick(player, args[1])) {
+                MessageUtil.sendMessage(player, "messages.nickChangedByModeratorMessage", args[1]);
+                MessageUtil.sendMessage(sender, "messages.moderatorNickChangedMessage", args[1]);
+            }
         }
 
         return true;
     }
 
-    private static void setNick(Player player, String nick) {
-        nick = nick.replaceAll("(&r)+$", "");
-        nick += "&r";
-        SimplyNicks.getDatabase().updatePlayerNickData(player.getUniqueId(), nick);
-        player.setDisplayName(ChatColor.translateAlternateColorCodes('&', nick));
+    private static boolean setNick(Player player, String nick) {
+        if (!SimplyNicks.getDatabase().updatePlayerNickData(player.getUniqueId(), nick)) {
+            return false;
+        }
+
+        NickUtil.applyNick(player, nick);
+        return true;
     }
 
     private static void resetNick(Player player) {
         SimplyNicks.getDatabase().removePlayerNickData(player.getUniqueId());
-        player.setDisplayName(null);
+        player.displayName(null);
     }
 }
