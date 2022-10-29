@@ -2,8 +2,8 @@ package net.simplyvanilla.simplynicks.event;
 
 import net.simplyvanilla.simplynicks.SimplyNicks;
 import net.simplyvanilla.simplynicks.util.MessageUtil;
+import net.simplyvanilla.simplynicks.util.NickUtil;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -47,7 +47,7 @@ public class PlayerEvents implements Listener {
             String nick = SimplyNicks.getDatabase().getPlayerNickData(event.getPlayer().getUniqueId());
             if (nick != null) {
                 SimplyNicks.getCache().addNick(event.getPlayer().getUniqueId().toString(), nick);
-                event.getPlayer().setDisplayName(ChatColor.translateAlternateColorCodes('&', nick));
+                NickUtil.applyNick(event.getPlayer(), nick);
             }
         }, 1L);
     }

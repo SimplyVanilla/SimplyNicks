@@ -1,7 +1,6 @@
 package net.simplyvanilla.simplynicks.database;
 
 import net.simplyvanilla.simplynicks.SimplyNicks;
-import org.bukkit.entity.Player;
 
 import java.sql.*;
 import java.util.HashMap;
@@ -32,13 +31,12 @@ public class MySQL {
             String tableCheckQuery = String.format(
                 """
                         CREATE TABLE IF NOT EXISTS `%s` (
-                            `id` int unsigned NOT NULL AUTO_INCREMENT,
-                            `uuid` char(36) NOT NULL,
+                            `id` BINARY(16) NOT NULL,
                             `nick` varchar(256) NOT NULL,
                             `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
                             `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                             PRIMARY KEY (`id`),
-                             UNIQUE KEY `uuid` (`uuid`)
+                             UNIQUE KEY `nick` (`nick`)
                         )
                     """, this.tableName);
 
@@ -58,13 +56,13 @@ public class MySQL {
 
     public Map<String, String> getAllNicks() {
         Map<String, String> nicks = new HashMap<>();
-        String query = String.format("SELECT * FROM `%s`", this.tableName);
+        String query = String.format("SELECT BIN_TO_UUID(`id`) `id`, `nick` FROM `%s`", this.tableName);
 
         try {
             ResultSet rs = this.statement.executeQuery(query);
 
             while (rs.next()) {
-                nicks.put(rs.getString("uuid"), rs.getString("nick"));
+                nicks.put(rs.getString("id"), rs.getString("nick"));
             }
         } catch (Exception ex) {
             this.plugin.getLogger().log(Level.SEVERE, "Unable to getAllNicks...");
@@ -75,7 +73,7 @@ public class MySQL {
     }
 
     public String getPlayerNickData(UUID uuid) {
-        String playerSearchQuery = String.format("SELECT * FROM `%s` WHERE `uuid` = ?", this.tableName);
+        String playerSearchQuery = String.format("SELECT `nick` FROM `%s` WHERE `id` = UUID_TO_BIN(?)", this.tableName);
 
         try {
             PreparedStatement playerSearchQueryPS = this.connection.prepareStatement(playerSearchQuery);
@@ -92,29 +90,43 @@ public class MySQL {
         return null;
     }
 
-    public void updatePlayerNickData(UUID uuid, String nick) {
-        String playerListUpdateQuery = String.format(
-            """
-                    INSERT INTO `%s` (`uuid`, `nick`) VALUES (?, ?)
-                    ON DUPLICATE KEY UPDATE `nick` = VALUES(`nick`), `updated_at` = CURRENT_TIMESTAMP
-                """, this.tableName);
+    public boolean updatePlayerNickData(UUID uuid, String nick) {
+        if (getPlayerNickData(uuid) == null) {
+            String playerNickDataQuery = String.format("INSERT INTO `%s` (`id`, `nick`) VALUES (UUID_TO_BIN(?), ?)", this.tableName);
 
-        try {
-            PreparedStatement playerListUpdateQueryPS = this.connection.prepareStatement(playerListUpdateQuery);
-            playerListUpdateQueryPS.setString(1, uuid.toString());
-            playerListUpdateQueryPS.setString(2, nick);
-            playerListUpdateQueryPS.executeUpdate();
-        } catch (Exception ex) {
-            this.plugin.getLogger().log(Level.SEVERE, "Unable to updatePlayerNickData...");
-            ex.printStackTrace();
+            try {
+                PreparedStatement playerNickDataQueryPS = this.connection.prepareStatement(playerNickDataQuery);
+                playerNickDataQueryPS.setString(1, uuid.toString());
+                playerNickDataQueryPS.setString(2, nick);
+                playerNickDataQueryPS.executeUpdate();
+            } catch (Exception ex) {
+                this.plugin.getLogger().log(Level.SEVERE, "Unable to insertPlayerNickData...");
+                ex.printStackTrace();
+                return false;
+            }
+
+        } else {
+            String playerNickDataQuery = String.format("UPDATE `%s` SET `nick` = ? WHERE `id` = UUID_TO_BIN(?)", this.tableName);
+
+            try {
+                PreparedStatement playerNickDataQueryPS = this.connection.prepareStatement(playerNickDataQuery);
+                playerNickDataQueryPS.setString(1, nick);
+                playerNickDataQueryPS.setString(2, uuid.toString());
+                playerNickDataQueryPS.executeUpdate();
+            } catch (Exception ex) {
+                this.plugin.getLogger().log(Level.SEVERE, "Unable to updatePlayerNickData...");
+                ex.printStackTrace();
+                return false;
+            }
         }
 
         SimplyNicks.getCache().removeNick(uuid.toString());
         SimplyNicks.getCache().addNick(uuid.toString(), nick);
+        return true;
     }
 
     public void removePlayerNickData(UUID uuid) {
-        String playerListUpdateQuery = String.format("DELETE FROM `%s` WHERE `uuid` = ?", this.tableName);
+        String playerListUpdateQuery = String.format("DELETE FROM `%s` WHERE `id` = UUID_TO_BIN(?)", this.tableName);
 
         try {
             PreparedStatement playerListUpdateQueryPS = this.connection.prepareStatement(playerListUpdateQuery);
