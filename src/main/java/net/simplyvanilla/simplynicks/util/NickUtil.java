@@ -1,6 +1,6 @@
 package net.simplyvanilla.simplynicks.util;
 
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.entity.Player;
 
 public class NickUtil {
@@ -9,6 +9,6 @@ public class NickUtil {
         nick = nick.replaceAll("(&r)+$", "");
         nick += "&r";
 
-        player.setDisplayName(ChatColor.translateAlternateColorCodes('&', nick));
+        player.displayName(LegacyComponentSerializer.legacyAmpersand().deserialize(nick));
     }
 }

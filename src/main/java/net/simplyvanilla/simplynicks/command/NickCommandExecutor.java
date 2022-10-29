@@ -109,6 +109,6 @@ public class NickCommandExecutor implements CommandExecutor {
 
     private static void resetNick(Player player) {
         SimplyNicks.getDatabase().removePlayerNickData(player.getUniqueId());
-        player.setDisplayName(null);
+        player.displayName(null);
     }
 }
