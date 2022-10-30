@@ -14,18 +14,19 @@ commands:
       /nick reset - reset your nickname
     permission: simplynicks.changenick
 
-simplynicks.changenick:
-  description: whether the player can change their own nick
-  default: false
+permissions:
+  simplynicks.changenick:
+    description: whether the player can change their own nick
+    default: false
 
-simplynicks.colors.default:
-  description: whether the player can use default colors in their nick
-  default: false
+  simplynicks.colors.default:
+    description: whether the player can use default colors in their nick
+    default: false
 
-simplynicks.colors.all:
-  description: whether the player can use all colors in their nick
-  default: false
+  simplynicks.colors.all:
+    description: whether the player can use all colors in their nick
+    default: false
 
-simplynicks.changeothers:
-  description: whether the player can change other player nick
-  default: op
+  simplynicks.changeothers:
+    description: whether the player can change other player nick
+    default: op
