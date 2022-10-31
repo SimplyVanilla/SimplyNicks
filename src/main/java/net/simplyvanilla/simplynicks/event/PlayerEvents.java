@@ -24,7 +24,7 @@ public class PlayerEvents implements Listener {
 
                 UUID matchedUUID = SimplyNicks.getCache().getUUIDByNick(event.getPlayer().getName());
                 // nick belongs to a different UUID, force rename on nick-name
-                if (!matchedUUID.equals(event.getPlayer().getUniqueId())) {
+                if (matchedUUID != null && !matchedUUID.equals(event.getPlayer().getUniqueId())) {
                     OfflinePlayer nickNamedPlayer = Bukkit.getOfflinePlayer(matchedUUID);
                     if (nickNamedPlayer.isOnline()) {
                         nickNamedPlayer.getPlayer().displayName(null);
