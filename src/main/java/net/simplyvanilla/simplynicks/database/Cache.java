@@ -30,6 +30,8 @@ public class Cache {
     }
 
     public boolean isNickAvailable(String checkNick) {
+        SimplyNicks.getInstance().getLogger().info(this.nicks.toString());
+
         if (this.nicks.containsValue(checkNick)) {
             return false;
         }
@@ -44,6 +46,7 @@ public class Cache {
     }
 
     public UUID getUUIDByNick(String nick) {
+        SimplyNicks.getInstance().getLogger().info(this.nicks.toString());
 
         for (var entry : this.nicks.entrySet()) {
             if (entry.getValue().equals(nick)) {
