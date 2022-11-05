@@ -20,11 +20,6 @@ public class RealnameCommandExecutor implements CommandExecutor {
 
         Map<String, String> messageReplacements = new HashMap<>();
 
-        if (!GamePermissionUtil.hasPermission(sender, "simplynicks.showname")) {
-            MessageUtil.sendMessage(sender, "messages.error.permissionErrorMessage");
-            return true;
-        }
-
         if (args.length != 1) {
             return false;
         }

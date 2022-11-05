@@ -8,7 +8,6 @@ messages:
   nickResetMessageByModerator: "A moderator reset your nick."
   moderatorNickResetMessage: "Player's nick has been reset."
   realname: "[nick]'s real username is [realname]."
-  displayname: "[realname]'s nick is [nick]"
 
   error:
     colorPermissionErrorMessage: "Insufficient permission to use that color."
