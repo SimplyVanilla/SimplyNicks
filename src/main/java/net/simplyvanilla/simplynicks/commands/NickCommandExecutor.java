@@ -1,26 +1,24 @@
-package net.simplyvanilla.simplynicks.command;
+package net.simplyvanilla.simplynicks.commands;
 
 import net.simplyvanilla.simplynicks.SimplyNicks;
-import net.simplyvanilla.simplynicks.util.GamePermissionUtil;
-import net.simplyvanilla.simplynicks.util.MessageUtil;
-import net.simplyvanilla.simplynicks.util.NickUtil;
-import net.simplyvanilla.simplynicks.util.NickValidationUtil;
+import net.simplyvanilla.simplynicks.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-public class NickCommandExecutor implements CommandExecutor {
-    Configuration config = SimplyNicks.getInstance().getConfig();
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
+public class NickCommandExecutor implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-        Player player;
+        Map<String, String> messageReplacements = new HashMap<>();
 
         if (args.length == 1 && sender instanceof Player) {
-            player = (Player) sender;
+            Player player = (Player) sender;
 
             if (!GamePermissionUtil.hasPermission(sender, "simplynicks.changenick")) {
                 MessageUtil.sendMessage(sender, "messages.error.permissionErrorMessage");
@@ -32,6 +30,8 @@ public class NickCommandExecutor implements CommandExecutor {
                 MessageUtil.sendMessage(sender, "messages.nickResetMessage");
                 return true;
             }
+
+            messageReplacements.put("nick", args[0]);
 
             if (!NickValidationUtil.isValidNick(args[0])) {
                 MessageUtil.sendMessage(sender, "messages.error.nickValidationErrorMessage");
@@ -50,7 +50,7 @@ public class NickCommandExecutor implements CommandExecutor {
             }
 
             if (setNick(player, args[0])) {
-                MessageUtil.sendMessage(sender, "messages.nickChangedSuccessfullyMessage", args[0]);
+                MessageUtil.sendMessage(sender, "messages.nickChangedSuccessfullyMessage", messageReplacements);
             }
 
         } else if (args.length == 2) {
@@ -59,19 +59,29 @@ public class NickCommandExecutor implements CommandExecutor {
                 return true;
             }
 
-            player = Bukkit.getPlayer(args[0]);
+            Player player = Bukkit.getPlayer(args[0]);
+            UUID uuid = null;
+            if (player == null) {
+                uuid = PlayerUtil.tryUUID(args[0]);
+            }
+
+            if (player == null && uuid == null) {
+                MessageUtil.sendMessage(sender, "messages.error.playerCannotFoundErrorMessage");
+                return true;
+            }
 
             if (args[1].equals("reset")) {
-                resetNick(player);
-                MessageUtil.sendMessage(player, "messages.nickResetMessageByModerator");
+                if (player != null) {
+                    resetNick(player);
+                    MessageUtil.sendMessage(player, "messages.nickResetMessageByModerator");
+                } else {
+                    resetNick(uuid);
+                }
                 MessageUtil.sendMessage(sender, "messages.moderatorNickResetMessage");
                 return true;
             }
 
-            if (player == null) {
-                MessageUtil.sendMessage(sender, "messages.error.playerCannotFoundErrorMessage");
-                return true;
-            }
+            messageReplacements.put("nick", args[1]);
 
             if (!NickValidationUtil.isValidNick(args[1])) {
                 MessageUtil.sendMessage(sender, "messages.error.nickValidationErrorMessage");
@@ -89,17 +99,22 @@ public class NickCommandExecutor implements CommandExecutor {
                 return true;
             }
 
-            if (setNick(player, args[1])) {
-                MessageUtil.sendMessage(player, "messages.nickChangedByModeratorMessage", args[1]);
-                MessageUtil.sendMessage(sender, "messages.moderatorNickChangedMessage", args[1]);
+            if (player != null && setNick(player, args[1])) {
+                MessageUtil.sendMessage(player, "messages.nickChangedByModeratorMessage", messageReplacements);
+            } else if (player == null && !setNick(uuid, args[1])) {
+                return true;
+            } else {
+                return true;
             }
+
+            MessageUtil.sendMessage(sender, "messages.moderatorNickChangedMessage", messageReplacements);
         }
 
         return true;
     }
 
     private static boolean setNick(Player player, String nick) {
-        if (!SimplyNicks.getDatabase().updatePlayerNickData(player.getUniqueId(), nick)) {
+        if (!setNick(player.getUniqueId(), nick)) {
             return false;
         }
 
@@ -107,8 +122,16 @@ public class NickCommandExecutor implements CommandExecutor {
         return true;
     }
 
+    private static boolean setNick(UUID uuid, String nick) {
+        return SimplyNicks.getDatabase().updatePlayerNickData(uuid, nick);
+    }
+
     private static void resetNick(Player player) {
-        SimplyNicks.getDatabase().removePlayerNickData(player.getUniqueId());
+        resetNick(player.getUniqueId());
         player.displayName(null);
+    }
+
+    private static void resetNick(UUID uuid) {
+        SimplyNicks.getDatabase().removePlayerNickData(uuid);
     }
 }

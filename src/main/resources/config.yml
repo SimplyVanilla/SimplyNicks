@@ -1,20 +1,23 @@
 # Config for SimplyNicks
 
 messages:
-  nickChangedSuccessfullyMessage: Your nick changed to [nick].
-  nickChangedByModeratorMessage: A moderator changed your nick to [nick].
-  moderatorNickChangedMessage: Changed the player's nick to [nick].
-  nickResetMessage: Your nick has been reset.
-  nickResetMessageByModerator: A moderator reset your nick.
-  moderatorNickResetMessage: Player's nick has been reset.
+  nickChangedSuccessfullyMessage: "Your nick changed to [nick]."
+  nickChangedByModeratorMessage: "A moderator changed your nick to [nick]."
+  moderatorNickChangedMessage: "Changed the player's nick to [nick]."
+  nickResetMessage: "Your nick has been reset."
+  nickResetMessageByModerator: "A moderator reset your nick."
+  moderatorNickResetMessage: "Player's nick has been reset."
+  realname: "[nick]'s real username is [realname]."
+  displayname: "[realname]'s nick is [nick]"
 
   error:
-    colorPermissionErrorMessage: Insufficient permission to use that color.
-    permissionErrorMessage: Insufficient permission to change nick.
-    nickValidationErrorMessage: Your nick needs to be between 3 and 16 characters and not contain special characters.
-    playerCannotFoundErrorMessage: Player must be online.
-    nickAlreadyInUseMessage: Nick already in use.
-    nickFixedByOwnerMessage: Your nick has been reset due to naming collision.
+    colorPermissionErrorMessage: "Insufficient permission to use that color."
+    permissionErrorMessage: "Insufficient permissions."
+    nickValidationErrorMessage: "Your nick needs to be between 3 and 16 characters and not contain special characters."
+    playerCannotFoundErrorMessage: "Player not found."
+    nickAlreadyInUseMessage: "Nick already in use."
+    nickFixedByOwnerMessage: "Your nick has been reset due to naming collision."
+    nickNotFound: "Player does not have a nick."
 
 # Check here https://minecraft.fandom.com/wiki/Formatting_codes
 colors:

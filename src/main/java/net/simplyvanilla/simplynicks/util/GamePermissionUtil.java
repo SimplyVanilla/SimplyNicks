@@ -1,12 +1,15 @@
 package net.simplyvanilla.simplynicks.util;
 
 import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.command.RemoteConsoleCommandSender;
 import org.bukkit.permissions.Permissible;
 
 public class GamePermissionUtil {
 
     public static boolean hasPermission(Permissible sender, String permission) {
-        return sender instanceof ConsoleCommandSender || sender.hasPermission(permission);
+        return sender instanceof ConsoleCommandSender ||
+                sender instanceof RemoteConsoleCommandSender ||
+                sender.hasPermission(permission);
     }
 
     public static boolean hasColorPermission(Permissible sender, NickValidationUtil.ColorGroup colorGroup) {

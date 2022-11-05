@@ -18,6 +18,10 @@ public class Cache {
         }
     }
 
+    public String getNick(String uuid) {
+        return this.nicks.get(uuid);
+    }
+
     public void addNick(String uuid, String nick) {
         this.nicks.put(
             uuid,
