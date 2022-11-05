@@ -10,14 +10,20 @@ commands:
   nick:
     description: Change your nickname
     usage: |
-      /nick NICKNAME - set your nickname
-      /nick reset - reset your nickname
-    permission: simplynicks.changenick
+           /nick NICKNAME - Set your nick.
+           /nick reset - Reset your nick.
+    permission: simplynicks.nick
+
+  realname:
+    description: Shows a player's username by searching their nick.
+    usage: 'Usage: /<command> NICKNAME'
+    aliases:
+      - rname
 
 permissions:
-  simplynicks.changenick:
-    description: whether the player can change their own nick
-    default: false
+  simplynicks.nick:
+    description: allows access to the nick and realname command
+    default: true
 
   simplynicks.colors.default:
     description: whether the player can use default colors in their nick

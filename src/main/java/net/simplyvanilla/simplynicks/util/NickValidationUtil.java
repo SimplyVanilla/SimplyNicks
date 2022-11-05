@@ -20,18 +20,22 @@ public class NickValidationUtil {
 
     public static ColorGroup getColorGroup(String nick, List<String> defaultColors) {
         char[] c = nick.toCharArray();
+        boolean hasColor = false;
 
         for (int i = 0; i < c.length - 1; i++) {
             if (c[i] == '&' && colorCodes.indexOf(c[i + 1]) > -1) {
                 if (!defaultColors.contains(String.valueOf(c[i + 1]))) {
                     return ColorGroup.ALL;
-                } else {
-                    return ColorGroup.DEFAULT;
                 }
+                hasColor = true;
             }
         }
 
-        return ColorGroup.NONE;
+        if (hasColor) {
+            return ColorGroup.DEFAULT;
+        } else {
+            return ColorGroup.NONE;
+        }
     }
 
     public static boolean isValidNick(String nick) {

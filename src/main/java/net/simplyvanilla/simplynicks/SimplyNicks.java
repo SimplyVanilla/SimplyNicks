@@ -1,6 +1,7 @@
 package net.simplyvanilla.simplynicks;
 
-import net.simplyvanilla.simplynicks.command.NickCommandExecutor;
+import net.simplyvanilla.simplynicks.commands.NickCommandExecutor;
+import net.simplyvanilla.simplynicks.commands.RealnameCommandExecutor;
 import net.simplyvanilla.simplynicks.database.Cache;
 import net.simplyvanilla.simplynicks.database.MySQL;
 import net.simplyvanilla.simplynicks.event.PlayerEvents;
@@ -23,6 +24,7 @@ public final class SimplyNicks extends JavaPlugin {
         (cache = new Cache()).initCache();
         this.getServer().getPluginManager().registerEvents(new PlayerEvents(), this);
         this.getCommand("nick").setExecutor(new NickCommandExecutor());
+        this.getCommand("realname").setExecutor(new RealnameCommandExecutor());
         colors = this.getConfig().getStringList("colors");
     }
 
