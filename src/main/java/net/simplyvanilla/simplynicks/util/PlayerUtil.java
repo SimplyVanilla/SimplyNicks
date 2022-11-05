@@ -6,7 +6,7 @@ public class PlayerUtil {
     public static UUID tryUUID(String input) {
         try {
             return UUID.fromString(input);
-        } catch (IllegalArgumentException exception){
+        } catch (IllegalArgumentException exception) {
             return null;
         }
     }

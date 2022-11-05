@@ -8,8 +8,8 @@ public class GamePermissionUtil {
 
     public static boolean hasPermission(Permissible sender, String permission) {
         return sender instanceof ConsoleCommandSender ||
-                sender instanceof RemoteConsoleCommandSender ||
-                sender.hasPermission(permission);
+            sender instanceof RemoteConsoleCommandSender ||
+            sender.hasPermission(permission);
     }
 
     public static boolean hasColorPermission(Permissible sender, NickValidationUtil.ColorGroup colorGroup) {

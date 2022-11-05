@@ -1,7 +1,10 @@
 package net.simplyvanilla.simplynicks.commands;
 
 import net.simplyvanilla.simplynicks.SimplyNicks;
-import net.simplyvanilla.simplynicks.util.*;
+import net.simplyvanilla.simplynicks.util.GamePermissionUtil;
+import net.simplyvanilla.simplynicks.util.MessageUtil;
+import net.simplyvanilla.simplynicks.util.NickUtil;
+import net.simplyvanilla.simplynicks.util.NickValidationUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -69,10 +72,11 @@ public class NickCommandExecutor implements CommandExecutor {
             }
 
             if (args[1].equals("reset") || player.getName().equals(args[1])) {
-                resetNick((Player) player);
-
                 if (player.isOnline()) {
+                    resetNick(Objects.requireNonNull(player.getPlayer()));
                     MessageUtil.sendMessage(player.getPlayer(), "messages.nickResetMessageByModerator");
+                } else {
+                    resetNick(player.getUniqueId());
                 }
 
                 MessageUtil.sendMessage(sender, "messages.moderatorNickResetMessage");
@@ -97,36 +101,44 @@ public class NickCommandExecutor implements CommandExecutor {
                 return true;
             }
 
-            if (!setNick((Player) player, args[1])) {
-                return true;
-            }
-
             if (player.isOnline()) {
+                if (!setNick(Objects.requireNonNull(player.getPlayer()), args[1])) {
+                    return true;
+                }
                 MessageUtil.sendMessage(player.getPlayer(), "messages.nickChangedByModeratorMessage", messageReplacements);
+            } else {
+                if (!setNick(player.getUniqueId(), args[1])) {
+                    return true;
+                }
             }
 
             MessageUtil.sendMessage(sender, "messages.moderatorNickChangedMessage", messageReplacements);
+        } else {
+            return false;
         }
 
         return true;
     }
 
     private static boolean setNick(Player player, String nick) {
-        if (!SimplyNicks.getDatabase().updatePlayerNickData(player.getUniqueId(), nick)) {
+        if (!setNick(player.getUniqueId(), nick)) {
             return false;
         }
 
-        if (player.isOnline()) {
-            NickUtil.applyNick(player, nick);
-        }
-
+        NickUtil.applyNick(player, nick);
         return true;
     }
 
+    private static boolean setNick(UUID uuid, String nick) {
+        return SimplyNicks.getDatabase().updatePlayerNickData(uuid, nick);
+    }
+
     private static void resetNick(Player player) {
-        SimplyNicks.getDatabase().removePlayerNickData(player.getUniqueId());
-        if (player.isOnline()) {
-            player.displayName(null);
-        }
+        resetNick(player.getUniqueId());
+        player.displayName(null);
+    }
+
+    private static void resetNick(UUID uuid) {
+        SimplyNicks.getDatabase().removePlayerNickData(uuid);
     }
 }

@@ -1,7 +1,6 @@
 package net.simplyvanilla.simplynicks.commands;
 
 import net.simplyvanilla.simplynicks.SimplyNicks;
-import net.simplyvanilla.simplynicks.util.GamePermissionUtil;
 import net.simplyvanilla.simplynicks.util.MessageUtil;
 import net.simplyvanilla.simplynicks.util.NickValidationUtil;
 import org.bukkit.Bukkit;

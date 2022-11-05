@@ -10,8 +10,8 @@ commands:
   nick:
     description: Change your nickname
     usage: |
-      /nick NICKNAME - Set your nick.
-      /nick reset - Reset your nick.
+           /nick NICKNAME - Set your nick.
+           /nick reset - Reset your nick.
     permission: simplynicks.nick
 
   realname:
