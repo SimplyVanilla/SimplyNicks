@@ -25,7 +25,7 @@ public class Cache {
     public void addNick(String uuid, String nick) {
         this.nicks.put(
             uuid,
-            ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', nick))
+            nick
         );
     }
 

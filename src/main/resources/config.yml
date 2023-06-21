@@ -1,13 +1,13 @@
 # Config for SimplyNicks
 
 messages:
-  nickChangedSuccessfullyMessage: "Your nick changed to [nick]."
-  nickChangedByModeratorMessage: "A moderator changed your nick to [nick]."
-  moderatorNickChangedMessage: "Changed the player's nick to [nick]."
+  nickChangedSuccessfullyMessage: "Your nick changed to <nick>."
+  nickChangedByModeratorMessage: "A moderator changed your nick to <nick>."
+  moderatorNickChangedMessage: "Changed the player's nick to <nick>."
   nickResetMessage: "Your nick has been reset."
   nickResetMessageByModerator: "A moderator reset your nick."
   moderatorNickResetMessage: "Player's nick has been reset."
-  realname: "[nick]'s real username is [realname]."
+  realname: "<nick>'s real username is <realname>."
 
   error:
     colorPermissionErrorMessage: "Insufficient permission to use that color."

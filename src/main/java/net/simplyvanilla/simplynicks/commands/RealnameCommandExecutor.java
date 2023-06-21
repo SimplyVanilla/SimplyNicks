@@ -15,7 +15,8 @@ import java.util.Map;
 import java.util.UUID;
 
 public class RealnameCommandExecutor implements CommandExecutor {
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
+                             @NotNull String label, String[] args) {
 
         Map<String, String> messageReplacements = new HashMap<>();
 
@@ -29,7 +30,7 @@ public class RealnameCommandExecutor implements CommandExecutor {
 
         messageReplacements.put("nick", args[0]);
 
-        UUID uuid = SimplyNicks.getCache().getUUIDByNick(args[0]);
+        UUID uuid = SimplyNicks.getInstance().getCache().getUUIDByNick(args[0]);
         if (uuid == null) {
             MessageUtil.sendMessage(sender, "messages.error.nickNotFound");
             return true;
