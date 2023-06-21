@@ -13,7 +13,7 @@ public class Cache {
     private Map<String, String> nicks = new HashMap<>();
 
     public void initCache() {
-        for (var entry : SimplyNicks.getDatabase().getAllNicks().entrySet()) {
+        for (var entry : SimplyNicks.getInstance().getDatabase().getAllNicks().entrySet()) {
             addNick(entry.getKey(), entry.getValue());
         }
     }
