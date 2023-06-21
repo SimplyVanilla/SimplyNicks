@@ -10,12 +10,13 @@ import java.util.UUID;
 import java.util.logging.Level;
 
 public class MySQL {
-    SimplyNicks plugin = SimplyNicks.getInstance();
+    SimplyNicks plugin;
     String tableName;
     Connection connection;
     Statement statement;
 
-    public MySQL() {
+    public MySQL(SimplyNicks plugin) {
+        this.plugin = plugin;
         this.tableName = this.plugin.getConfig().getString("database.nickTableName");
     }
 
@@ -128,8 +129,8 @@ public class MySQL {
             }
         }
 
-        SimplyNicks.getInstance().getCache().removeNick(uuid.toString());
-        SimplyNicks.getInstance().getCache().addNick(uuid.toString(), nick);
+        this.plugin.getCache().removeNick(uuid.toString());
+        this.plugin.getCache().addNick(uuid.toString(), nick);
         return true;
     }
 
@@ -146,7 +147,7 @@ public class MySQL {
             ex.printStackTrace();
         }
 
-        SimplyNicks.getInstance().getCache().removeNick(uuid.toString());
+        this.plugin.getCache().removeNick(uuid.toString());
     }
 
     public void close() {
