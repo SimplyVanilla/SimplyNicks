@@ -1,9 +1,5 @@
 package net.simplyvanilla.simplynicks.commands;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
 import net.simplyvanilla.simplynicks.SimplyNicks;
 import net.simplyvanilla.simplynicks.util.GamePermissionUtil;
 import net.simplyvanilla.simplynicks.util.NickUtil;
@@ -15,6 +11,11 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 
 public class NickCommandExecutor implements CommandExecutor {
     private final SimplyNicks plugin;
