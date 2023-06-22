@@ -1,8 +1,5 @@
 package net.simplyvanilla.simplynicks.commands;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 import net.simplyvanilla.simplynicks.SimplyNicks;
 import net.simplyvanilla.simplynicks.util.NickValidationUtil;
 import org.bukkit.Bukkit;
@@ -11,6 +8,10 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class RealnameCommandExecutor implements CommandExecutor {
     private final SimplyNicks plugin;

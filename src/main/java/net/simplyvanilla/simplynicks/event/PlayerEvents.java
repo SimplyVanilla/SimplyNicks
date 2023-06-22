@@ -1,6 +1,5 @@
 package net.simplyvanilla.simplynicks.event;
 
-import java.util.UUID;
 import net.simplyvanilla.simplynicks.SimplyNicks;
 import net.simplyvanilla.simplynicks.util.NickUtil;
 import org.bukkit.Bukkit;
@@ -9,6 +8,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerLoginEvent;
+
+import java.util.UUID;
 
 public class PlayerEvents implements Listener {
     private final SimplyNicks plugin;
