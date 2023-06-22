@@ -10,12 +10,13 @@ import java.util.UUID;
 import java.util.logging.Level;
 
 public class MySQL {
-    SimplyNicks plugin = SimplyNicks.getInstance();
+    SimplyNicks plugin;
     String tableName;
     Connection connection;
     Statement statement;
 
-    public MySQL() {
+    public MySQL(SimplyNicks plugin) {
+        this.plugin = plugin;
         this.tableName = this.plugin.getConfig().getString("database.nickTableName");
     }
 
@@ -47,16 +48,19 @@ public class MySQL {
         }
 
         if (this.connection == null || this.statement == null) {
-            this.plugin.getLogger().log(Level.SEVERE, "Database connection is not stable. Plugin disabling...");
-            this.plugin.getLogger().log(Level.SEVERE, "Please check your database. And config file.");
-            this.plugin.getPluginLoader().disablePlugin(this.plugin);
+            this.plugin.getLogger()
+                .log(Level.SEVERE, "Database connection is not stable. Plugin disabling...");
+            this.plugin.getLogger()
+                .log(Level.SEVERE, "Please check your database. And config file.");
+            this.plugin.getServer().getPluginManager().disablePlugin(this.plugin);
         }
 
     }
 
     public Map<String, String> getAllNicks() {
         Map<String, String> nicks = new HashMap<>();
-        String query = String.format("SELECT BIN_TO_UUID(`id`) `id`, `nick` FROM `%s`", this.tableName);
+        String query =
+            String.format("SELECT BIN_TO_UUID(`id`) `id`, `nick` FROM `%s`", this.tableName);
 
         try {
             ResultSet rs = this.statement.executeQuery(query);
@@ -73,10 +77,11 @@ public class MySQL {
     }
 
     public String getPlayerNickData(UUID uuid) {
-        String playerSearchQuery = String.format("SELECT `nick` FROM `%s` WHERE `id` = UUID_TO_BIN(?)", this.tableName);
+        String playerSearchQuery =
+            String.format("SELECT `nick` FROM `%s` WHERE `id` = UUID_TO_BIN(?)", this.tableName);
 
-        try {
-            PreparedStatement playerSearchQueryPS = this.connection.prepareStatement(playerSearchQuery);
+        try (PreparedStatement playerSearchQueryPS = this.connection.prepareStatement(
+            playerSearchQuery)) {
             playerSearchQueryPS.setString(1, uuid.toString());
             ResultSet rs = playerSearchQueryPS.executeQuery();
             if (rs.next()) {
@@ -92,10 +97,12 @@ public class MySQL {
 
     public boolean updatePlayerNickData(UUID uuid, String nick) {
         if (getPlayerNickData(uuid) == null) {
-            String playerNickDataQuery = String.format("INSERT INTO `%s` (`id`, `nick`) VALUES (UUID_TO_BIN(?), ?)", this.tableName);
+            String playerNickDataQuery =
+                String.format("INSERT INTO `%s` (`id`, `nick`) VALUES (UUID_TO_BIN(?), ?)",
+                    this.tableName);
 
-            try {
-                PreparedStatement playerNickDataQueryPS = this.connection.prepareStatement(playerNickDataQuery);
+            try (PreparedStatement playerNickDataQueryPS = this.connection.prepareStatement(
+                playerNickDataQuery)) {
                 playerNickDataQueryPS.setString(1, uuid.toString());
                 playerNickDataQueryPS.setString(2, nick);
                 playerNickDataQueryPS.executeUpdate();
@@ -106,10 +113,12 @@ public class MySQL {
             }
 
         } else {
-            String playerNickDataQuery = String.format("UPDATE `%s` SET `nick` = ? WHERE `id` = UUID_TO_BIN(?)", this.tableName);
+            String playerNickDataQuery =
+                String.format("UPDATE `%s` SET `nick` = ? WHERE `id` = UUID_TO_BIN(?)",
+                    this.tableName);
 
-            try {
-                PreparedStatement playerNickDataQueryPS = this.connection.prepareStatement(playerNickDataQuery);
+            try (PreparedStatement playerNickDataQueryPS = this.connection.prepareStatement(
+                playerNickDataQuery);) {
                 playerNickDataQueryPS.setString(1, nick);
                 playerNickDataQueryPS.setString(2, uuid.toString());
                 playerNickDataQueryPS.executeUpdate();
@@ -120,16 +129,17 @@ public class MySQL {
             }
         }
 
-        SimplyNicks.getCache().removeNick(uuid.toString());
-        SimplyNicks.getCache().addNick(uuid.toString(), nick);
+        this.plugin.getCache().removeNick(uuid.toString());
+        this.plugin.getCache().addNick(uuid.toString(), nick);
         return true;
     }
 
     public void removePlayerNickData(UUID uuid) {
-        String playerListUpdateQuery = String.format("DELETE FROM `%s` WHERE `id` = UUID_TO_BIN(?)", this.tableName);
+        String playerListUpdateQuery =
+            String.format("DELETE FROM `%s` WHERE `id` = UUID_TO_BIN(?)", this.tableName);
 
-        try {
-            PreparedStatement playerListUpdateQueryPS = this.connection.prepareStatement(playerListUpdateQuery);
+        try (PreparedStatement playerListUpdateQueryPS = this.connection.prepareStatement(
+            playerListUpdateQuery);) {
             playerListUpdateQueryPS.setString(1, uuid.toString());
             playerListUpdateQueryPS.executeUpdate();
         } catch (Exception ex) {
@@ -137,7 +147,7 @@ public class MySQL {
             ex.printStackTrace();
         }
 
-        SimplyNicks.getCache().removeNick(uuid.toString());
+        this.plugin.getCache().removeNick(uuid.toString());
     }
 
     public void close() {

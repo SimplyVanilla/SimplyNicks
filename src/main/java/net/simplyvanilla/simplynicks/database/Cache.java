@@ -12,8 +12,14 @@ import java.util.UUID;
 public class Cache {
     private Map<String, String> nicks = new HashMap<>();
 
+    private final SimplyNicks plugin;
+
+    public Cache(SimplyNicks plugin) {
+        this.plugin = plugin;
+    }
+
     public void initCache() {
-        for (var entry : SimplyNicks.getDatabase().getAllNicks().entrySet()) {
+        for (var entry : this.plugin.getDatabase().getAllNicks().entrySet()) {
             addNick(entry.getKey(), entry.getValue());
         }
     }
@@ -25,7 +31,7 @@ public class Cache {
     public void addNick(String uuid, String nick) {
         this.nicks.put(
             uuid,
-            ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', nick))
+            nick
         );
     }
 

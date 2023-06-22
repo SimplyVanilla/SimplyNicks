@@ -1,7 +1,7 @@
 package net.simplyvanilla.simplynicks.event;
 
+import java.util.UUID;
 import net.simplyvanilla.simplynicks.SimplyNicks;
-import net.simplyvanilla.simplynicks.util.MessageUtil;
 import net.simplyvanilla.simplynicks.util.NickUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -10,30 +10,36 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerLoginEvent;
 
-import java.util.UUID;
-
 public class PlayerEvents implements Listener {
+    private final SimplyNicks plugin;
+
+    public PlayerEvents(SimplyNicks plugin) {
+        this.plugin = plugin;
+    }
+
     @EventHandler(
         priority = EventPriority.HIGHEST
     )
     public void onPlayerLogin(PlayerLoginEvent event) {
-        Bukkit.getScheduler().runTaskLater(SimplyNicks.getInstance(), () -> {
+        Bukkit.getScheduler().runTaskLater(this.plugin, () -> {
 
             // check if logging in player-name is clashing with existing nick -> prefer player-name over nick
-            if (!SimplyNicks.getCache().isNickAvailable(event.getPlayer().getName())) {
+            if (!this.plugin.getCache().isNickAvailable(event.getPlayer().getName())) {
 
-                UUID matchedUUID = SimplyNicks.getCache().getUUIDByNick(event.getPlayer().getName());
+                UUID matchedUUID =
+                    this.plugin.getCache().getUUIDByNick(event.getPlayer().getName());
                 // nick belongs to a different UUID, force rename on nick-name
                 if (matchedUUID != null && !matchedUUID.equals(event.getPlayer().getUniqueId())) {
                     OfflinePlayer nickNamedPlayer = Bukkit.getOfflinePlayer(matchedUUID);
                     if (nickNamedPlayer.isOnline()) {
                         nickNamedPlayer.getPlayer().displayName(null);
-                        MessageUtil.sendMessage(nickNamedPlayer.getPlayer(), "messages.error.nickFixedByOwnerMessage");
+                        this.plugin.sendConfigMessage(nickNamedPlayer.getPlayer(),
+                            "messages.error.nickFixedByOwnerMessage");
                     }
 
-                    SimplyNicks.getDatabase().removePlayerNickData(matchedUUID);
+                    this.plugin.getDatabase().removePlayerNickData(matchedUUID);
 
-                    SimplyNicks.getInstance().getLogger().info(
+                    this.plugin.getLogger().info(
                         String.format(
                             "%s name colliding with %s's nick, resetting...",
                             event.getPlayer().getName(),
@@ -44,9 +50,10 @@ public class PlayerEvents implements Listener {
             }
 
             // check if logging in player has user nick
-            String nick = SimplyNicks.getDatabase().getPlayerNickData(event.getPlayer().getUniqueId());
+            String nick =
+                this.plugin.getDatabase().getPlayerNickData(event.getPlayer().getUniqueId());
             if (nick != null) {
-                SimplyNicks.getCache().addNick(event.getPlayer().getUniqueId().toString(), nick);
+                this.plugin.getCache().addNick(event.getPlayer().getUniqueId().toString(), nick);
                 NickUtil.applyNick(event.getPlayer(), nick);
             }
         }, 1L);

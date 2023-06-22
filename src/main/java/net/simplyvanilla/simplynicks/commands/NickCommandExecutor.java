@@ -1,8 +1,11 @@
 package net.simplyvanilla.simplynicks.commands;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 import net.simplyvanilla.simplynicks.SimplyNicks;
 import net.simplyvanilla.simplynicks.util.GamePermissionUtil;
-import net.simplyvanilla.simplynicks.util.MessageUtil;
 import net.simplyvanilla.simplynicks.util.NickUtil;
 import net.simplyvanilla.simplynicks.util.NickValidationUtil;
 import org.bukkit.Bukkit;
@@ -13,132 +16,169 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
-
 public class NickCommandExecutor implements CommandExecutor {
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+    private final SimplyNicks plugin;
+
+    public NickCommandExecutor(SimplyNicks plugin) {
+        this.plugin = plugin;
+    }
+
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
+                             @NotNull String label, String[] args) {
         Map<String, String> messageReplacements = new HashMap<>();
 
-        if (args.length == 1 && sender instanceof Player) {
-            Player player = (Player) sender;
-
-            if (!GamePermissionUtil.hasPermission(sender, "simplynicks.nick")) {
-                MessageUtil.sendMessage(sender, "messages.error.permissionErrorMessage");
-                return true;
-            }
-
-            if (args[0].equals("reset") || player.getName().equals(args[0])) {
-                resetNick(player);
-                MessageUtil.sendMessage(sender, "messages.nickResetMessage");
-                return true;
-            }
-
-            messageReplacements.put("nick", args[0]);
-
-            if (!NickValidationUtil.isValidNick(args[0])) {
-                MessageUtil.sendMessage(sender, "messages.error.nickValidationErrorMessage");
-                return true;
-            }
-
-            if (!GamePermissionUtil.hasColorPermission(
-                sender, NickValidationUtil.getColorGroup(args[0], SimplyNicks.colors))) {
-                MessageUtil.sendMessage(sender, "messages.error.colorPermissionErrorMessage");
-                return true;
-            }
-
-            if (!SimplyNicks.getCache().isNickAvailable(args[0], player.getName())) {
-                MessageUtil.sendMessage(sender, "messages.error.nickAlreadyInUseMessage");
-                return true;
-            }
-
-            if (setNick(player, args[0])) {
-                MessageUtil.sendMessage(sender, "messages.nickChangedSuccessfullyMessage", messageReplacements);
-            }
-
+        if (args.length == 1 && sender instanceof Player player) {
+            handleSingleArgument(sender, player, args[0], messageReplacements);
         } else if (args.length == 2) {
-            if (!GamePermissionUtil.hasPermission(sender, "simplynicks.changeothers")) {
-                MessageUtil.sendMessage(sender, "messages.error.permissionErrorMessage");
-                return true;
-            }
-
-            OfflinePlayer player = Bukkit.getOfflinePlayer(args[0]);
-
-            if (player.getName() == null) {
-                MessageUtil.sendMessage(sender, "messages.error.playerCannotFoundErrorMessage");
-                return true;
-            }
-
-            if (args[1].equals("reset") || player.getName().equals(args[1])) {
-                if (player.isOnline()) {
-                    resetNick(Objects.requireNonNull(player.getPlayer()));
-                    MessageUtil.sendMessage(player.getPlayer(), "messages.nickResetMessageByModerator");
-                } else {
-                    resetNick(player.getUniqueId());
-                }
-
-                MessageUtil.sendMessage(sender, "messages.moderatorNickResetMessage");
-                return true;
-            }
-
-            messageReplacements.put("nick", args[1]);
-
-            if (!NickValidationUtil.isValidNick(args[1])) {
-                MessageUtil.sendMessage(sender, "messages.error.nickValidationErrorMessage");
-                return true;
-            }
-
-            if (!GamePermissionUtil.hasColorPermission(
-                sender, NickValidationUtil.getColorGroup(args[1], SimplyNicks.colors))) {
-                MessageUtil.sendMessage(sender, "messages.error.colorPermissionErrorMessage");
-                return true;
-            }
-
-            if (!SimplyNicks.getCache().isNickAvailable(args[1], player.getName())) {
-                MessageUtil.sendMessage(sender, "messages.error.nickAlreadyInUseMessage");
-                return true;
-            }
-
-            if (player.isOnline()) {
-                if (!setNick(Objects.requireNonNull(player.getPlayer()), args[1])) {
-                    return true;
-                }
-                MessageUtil.sendMessage(player.getPlayer(), "messages.nickChangedByModeratorMessage", messageReplacements);
-            } else {
-                if (!setNick(player.getUniqueId(), args[1])) {
-                    return true;
-                }
-            }
-
-            MessageUtil.sendMessage(sender, "messages.moderatorNickChangedMessage", messageReplacements);
-        } else {
-            return false;
+            handleTwoArguments(sender, args, messageReplacements);
         }
-
         return true;
     }
 
-    private static boolean setNick(Player player, String nick) {
+    private void handleSingleArgument(CommandSender sender, Player player, String arg,
+                                      Map<String, String> messageReplacements) {
+        if (!hasNickPermission(sender)) {
+            return;
+        }
+
+        if (arg.equals("reset") || player.getName().equals(arg)) {
+            resetNick(player);
+            this.plugin.sendConfigMessage(sender, "messages.nickResetMessage");
+            return;
+        }
+
+        messageReplacements.put("nick", arg);
+
+        if (!validateNickAndColor(sender, arg)) {
+            return;
+        }
+
+        if (!isNickAvailable(sender, arg, player.getName())) {
+            return;
+        }
+
+        if (setNick(player, arg)) {
+            this.plugin.sendConfigMessage(sender, "messages.nickChangedSuccessfullyMessage",
+                messageReplacements);
+        }
+    }
+
+    private void handleTwoArguments(CommandSender sender, String[] args,
+                                    Map<String, String> messageReplacements) {
+        if (!hasChangeOthersPermission(sender)) {
+            return;
+        }
+
+        OfflinePlayer player = Bukkit.getOfflinePlayer(args[0]);
+
+        if (player.getName() == null) {
+            this.plugin.sendConfigMessage(sender, "messages.error.playerCannotFoundErrorMessage");
+            return;
+        }
+
+        if (args[1].equals("reset") || player.getName().equals(args[1])) {
+            handleResetNick(sender, player);
+            return;
+        }
+
+        messageReplacements.put("nick", args[1]);
+
+        if (!validateNickAndColor(sender, args[1])) {
+            return;
+        }
+
+        if (!isNickAvailable(sender, args[1], player.getName())) {
+            return;
+        }
+
+        handleSetNick(sender, player, args[1], messageReplacements);
+    }
+
+    private boolean hasNickPermission(CommandSender sender) {
+        if (!GamePermissionUtil.hasPermission(sender, "simplynicks.nick")) {
+            this.plugin.sendConfigMessage(sender, "messages.error.permissionErrorMessage");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean hasChangeOthersPermission(CommandSender sender) {
+        if (!GamePermissionUtil.hasPermission(sender, "simplynicks.changeothers")) {
+            this.plugin.sendConfigMessage(sender, "messages.error.permissionErrorMessage");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean validateNickAndColor(CommandSender sender, String nick) {
+        if (!NickValidationUtil.isValidNick(nick)) {
+            this.plugin.sendConfigMessage(sender, "messages.error.nickValidationErrorMessage");
+            return false;
+        }
+        if (!GamePermissionUtil.hasColorPermission(
+            sender, NickValidationUtil.getColorGroup(nick, this.plugin.getColors()))) {
+            this.plugin.sendConfigMessage(sender, "messages.error.colorPermissionErrorMessage");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isNickAvailable(CommandSender sender, String nick, String name) {
+        if (!this.plugin.getCache().isNickAvailable(nick, name)) {
+            this.plugin.sendConfigMessage(sender, "messages.error.nickAlreadyInUseMessage");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean handleResetNick(CommandSender sender, OfflinePlayer player) {
+        if (player.isOnline()) {
+            resetNick(Objects.requireNonNull(player.getPlayer()));
+            this.plugin.sendConfigMessage(player.getPlayer(),
+                "messages.nickResetMessageByModerator");
+        } else {
+            resetNick(player.getUniqueId());
+        }
+        this.plugin.sendConfigMessage(sender, "messages.moderatorNickResetMessage");
+        return true;
+    }
+
+    private void handleSetNick(CommandSender sender, OfflinePlayer player, String nick,
+                               Map<String, String> messageReplacements) {
+        if (player.isOnline()) {
+            if (!setNick(Objects.requireNonNull(player.getPlayer()), nick)) {
+                return;
+            }
+            this.plugin.sendConfigMessage(player.getPlayer(),
+                "messages.nickChangedByModeratorMessage",
+                messageReplacements);
+        } else {
+            if (!setNick(player.getUniqueId(), nick)) {
+                return;
+            }
+        }
+        this.plugin.sendConfigMessage(sender, "messages.moderatorNickChangedMessage",
+            messageReplacements);
+    }
+
+    private boolean setNick(Player player, String nick) {
         if (!setNick(player.getUniqueId(), nick)) {
             return false;
         }
-
         NickUtil.applyNick(player, nick);
         return true;
     }
 
-    private static boolean setNick(UUID uuid, String nick) {
-        return SimplyNicks.getDatabase().updatePlayerNickData(uuid, nick);
+    private boolean setNick(UUID uuid, String nick) {
+        return this.plugin.getDatabase().updatePlayerNickData(uuid, nick);
     }
 
-    private static void resetNick(Player player) {
+    private void resetNick(Player player) {
         resetNick(player.getUniqueId());
         player.displayName(null);
     }
 
-    private static void resetNick(UUID uuid) {
-        SimplyNicks.getDatabase().removePlayerNickData(uuid);
+    private void resetNick(UUID uuid) {
+        this.plugin.getDatabase().removePlayerNickData(uuid);
     }
 }
