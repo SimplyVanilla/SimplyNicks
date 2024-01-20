@@ -5,6 +5,7 @@ api-version: 1.19
 
 author: Simply Vanilla
 website: https://github.com/SimplyVanilla/SimplyNicks
+folia-supported: true
 
 commands:
   nick:
