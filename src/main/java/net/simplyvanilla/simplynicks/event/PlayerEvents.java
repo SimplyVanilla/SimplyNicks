@@ -1,5 +1,6 @@
 package net.simplyvanilla.simplynicks.event;
 
+import java.util.UUID;
 import net.simplyvanilla.simplynicks.SimplyNicks;
 import net.simplyvanilla.simplynicks.util.NickUtil;
 import org.bukkit.Bukkit;
@@ -8,8 +9,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerLoginEvent;
-
-import java.util.UUID;
 
 public class PlayerEvents implements Listener {
     private final SimplyNicks plugin;
@@ -22,7 +21,7 @@ public class PlayerEvents implements Listener {
         priority = EventPriority.HIGHEST
     )
     public void onPlayerLogin(PlayerLoginEvent event) {
-        Bukkit.getScheduler().runTaskLater(this.plugin, () -> {
+        Runnable task = () -> {
 
             // check if logging in player-name is clashing with existing nick -> prefer player-name over nick
             if (!this.plugin.getCache().isNickAvailable(event.getPlayer().getName())) {
@@ -57,6 +56,14 @@ public class PlayerEvents implements Listener {
                 this.plugin.getCache().addNick(event.getPlayer().getUniqueId().toString(), nick);
                 NickUtil.applyNick(event.getPlayer(), nick);
             }
-        }, 1L);
+        };
+
+        if (SimplyNicks.isFolia()) {
+            event.getPlayer().getScheduler()
+                .runDelayed(this.plugin, scheduledTask -> task.run(), () -> {
+                }, 1L);
+        } else {
+            Bukkit.getScheduler().runTaskLater(this.plugin, task, 1L);
+        }
     }
 }
