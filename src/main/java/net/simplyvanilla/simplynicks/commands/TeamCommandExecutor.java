@@ -1,5 +1,6 @@
 package net.simplyvanilla.simplynicks.commands;
 
+import net.simplyvanilla.simplynicks.SimplyNicks;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -9,6 +10,12 @@ import java.util.Arrays;
 import java.util.Locale;
 
 public class TeamCommandExecutor implements CommandExecutor {
+    private final SimplyNicks plugin;
+
+    public TeamCommandExecutor(SimplyNicks plugin) {
+        this.plugin = plugin;
+    }
+
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (args.length == 0) {

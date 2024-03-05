@@ -6,6 +6,7 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.simplyvanilla.simplynicks.commands.NickCommandExecutor;
 import net.simplyvanilla.simplynicks.commands.RealnameCommandExecutor;
+import net.simplyvanilla.simplynicks.commands.TeamCommandExecutor;
 import net.simplyvanilla.simplynicks.database.Cache;
 import net.simplyvanilla.simplynicks.database.MySQL;
 import net.simplyvanilla.simplynicks.event.PlayerEvents;
@@ -48,6 +49,7 @@ public class SimplyNicks extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(new PlayerEvents(this), this);
         this.getCommand("nick").setExecutor(new NickCommandExecutor(this));
         this.getCommand("realname").setExecutor(new RealnameCommandExecutor(this));
+        this.getCommand("team").setExecutor(new TeamCommandExecutor(this));
         colors = this.getConfig().getStringList("colors");
     }
 
