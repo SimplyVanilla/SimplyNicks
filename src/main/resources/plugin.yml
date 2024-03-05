@@ -21,6 +21,16 @@ commands:
     aliases:
       - rname
 
+  team:
+    description: Commands for managing teams
+    usage: |
+           /team create <player> <team> - Create a team
+           /team delete <player> - Delete a team
+           /team modify <player> <name|color> <value> - Modify a team
+           /team join <player> <owner> - Join a team
+           /team leave <player> <owner> - Leave a team
+    permission: simplynicks.team
+
 permissions:
   simplynicks.nick:
     description: allows access to the nick and realname command
@@ -36,4 +46,8 @@ permissions:
 
   simplynicks.changeothers:
     description: whether the player can change other player nick
+    default: op
+
+  simplynicks.team:
+    description: allows access to the team command
     default: op
