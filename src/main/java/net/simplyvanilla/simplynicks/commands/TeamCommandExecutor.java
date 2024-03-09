@@ -144,6 +144,12 @@ public class TeamCommandExecutor implements CommandExecutor {
             return false;
         }
 
+        TeamMySQL.PlayerTeam playerTeam = this.plugin.getTeamCache().getTeam(ownerPlayer.getUniqueId());
+        if (playerTeam == null || !playerTeam.isOwner()) {
+            this.plugin.sendConfigMessage(sender, "messages.error.teamNotFound");
+            return false;
+        }
+
         if (!this.plugin.getTeamDatabase().joinTeam(memberPlayer.getUniqueId(), ownerPlayer.getUniqueId())) {
             return false;
         }
@@ -158,6 +164,17 @@ public class TeamCommandExecutor implements CommandExecutor {
         OfflinePlayer offlinePlayer = this.plugin.getServer().getOfflinePlayer(player);
         if (offlinePlayer.getName() == null) {
             this.plugin.sendConfigMessage(sender, "messages.error.playerCannotFoundErrorMessage");
+            return false;
+        }
+
+        TeamMySQL.PlayerTeam playerTeam = this.plugin.getTeamCache().getTeam(offlinePlayer.getUniqueId());
+        if (playerTeam == null) {
+            this.plugin.sendConfigMessage(sender, "messages.error.teamNotInTeam");
+            return false;
+        }
+
+        if (!playerTeam.isOwner()) {
+            this.plugin.sendConfigMessage(sender, "messages.error.teamNotOwner");
             return false;
         }
 
