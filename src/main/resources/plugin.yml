@@ -52,4 +52,4 @@ permissions:
 
   simplynicks.team:
     description: allows access to the team command
-    default: op
+    default: false
