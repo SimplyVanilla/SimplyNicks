@@ -9,6 +9,8 @@ import net.simplyvanilla.simplynicks.commands.RealnameCommandExecutor;
 import net.simplyvanilla.simplynicks.commands.TeamCommandExecutor;
 import net.simplyvanilla.simplynicks.database.Cache;
 import net.simplyvanilla.simplynicks.database.MySQL;
+import net.simplyvanilla.simplynicks.database.TeamCache;
+import net.simplyvanilla.simplynicks.database.TeamMySQL;
 import net.simplyvanilla.simplynicks.event.PlayerEvents;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -22,6 +24,8 @@ public class SimplyNicks extends JavaPlugin {
     private MySQL database;
     private Cache cache;
     private List<String> colors;
+    private TeamMySQL teamDatabase;
+    private TeamCache teamCache;
 
     @Override
     public void onEnable() {
@@ -46,6 +50,25 @@ public class SimplyNicks extends JavaPlugin {
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
+
+        this.teamDatabase = new TeamMySQL(this);
+        this.teamCache = new TeamCache(this);
+
+        try {
+            this.teamDatabase.connect();
+        } catch (Exception e) {
+            getLogger().warning("Could not connect to database! Please check your config.yml and try again.");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+        try {
+            this.teamCache.initCache();
+        } catch (Exception e) {
+            getLogger().warning("Could not load cache! Please check your config.yml and try again.");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
         this.getServer().getPluginManager().registerEvents(new PlayerEvents(this), this);
         this.getCommand("nick").setExecutor(new NickCommandExecutor(this));
         this.getCommand("realname").setExecutor(new RealnameCommandExecutor(this));
@@ -56,6 +79,7 @@ public class SimplyNicks extends JavaPlugin {
     @Override
     public void onDisable() {
         database.close();
+        teamDatabase.close();
     }
 
     public MySQL getDatabase() {
@@ -68,6 +92,14 @@ public class SimplyNicks extends JavaPlugin {
 
     public List<String> getColors() {
         return colors;
+    }
+
+    public TeamMySQL getTeamDatabase() {
+        return teamDatabase;
+    }
+
+    public TeamCache getTeamCache() {
+        return teamCache;
     }
 
     public String getMessage(String path) {

@@ -1,6 +1,8 @@
 package net.simplyvanilla.simplynicks.commands;
 
 import net.simplyvanilla.simplynicks.SimplyNicks;
+import net.simplyvanilla.simplynicks.database.TeamMySQL;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -8,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Map;
 
 public class TeamCommandExecutor implements CommandExecutor {
     private final SimplyNicks plugin;
@@ -70,27 +73,120 @@ public class TeamCommandExecutor implements CommandExecutor {
 
     // /team delete <player>
     private boolean handleDelete(CommandSender sender, String player) {
-        return false; // TODO
+        OfflinePlayer offlinePlayer = this.plugin.getServer().getOfflinePlayer(player);
+        if (offlinePlayer.getName() == null) {
+            this.plugin.sendConfigMessage(sender, "messages.error.playerCannotFoundErrorMessage");
+            return false;
+        }
+
+        TeamMySQL.PlayerTeam playerTeam = this.plugin.getTeamCache().getTeam(offlinePlayer.getUniqueId());
+        if (playerTeam == null) {
+            this.plugin.sendConfigMessage(sender, "messages.error.teamNotInTeam");
+            return false;
+        }
+
+        if (!playerTeam.isOwner()) {
+            this.plugin.sendConfigMessage(sender, "messages.error.teamNotOwner");
+            return false;
+        }
+
+        if (!this.plugin.getTeamDatabase().deleteTeam(offlinePlayer.getUniqueId())) {
+            return false;
+        }
+
+        this.plugin.sendConfigMessage(sender, "messages.teamDeletedMessage");
+        return true;
     }
 
     // /team leave <leaver> <owner>
     private boolean handleLeave(CommandSender sender, String leaver, String owner) {
-        return false; // TODO
+        OfflinePlayer leaverPlayer = this.plugin.getServer().getOfflinePlayer(leaver);
+        if (leaverPlayer.getName() == null) {
+            this.plugin.sendConfigMessage(sender, "messages.error.playerCannotFoundErrorMessage");
+            return false;
+        }
+
+        if (this.plugin.getTeamCache().getTeam(leaverPlayer.getUniqueId()) == null) {
+            this.plugin.sendConfigMessage(sender, "messages.error.teamNotInTeam");
+            return false;
+        }
+
+        OfflinePlayer ownerPlayer = this.plugin.getServer().getOfflinePlayer(owner);
+        if (ownerPlayer.getName() == null) {
+            this.plugin.sendConfigMessage(sender, "messages.error.playerCannotFoundErrorMessage");
+            return false;
+        }
+
+        if (!this.plugin.getTeamDatabase().leaveTeam(leaverPlayer.getUniqueId(), ownerPlayer.getUniqueId())) {
+            return false;
+        }
+
+        this.plugin.sendConfigMessage(sender, "messages.teamLeftMessage");
+        return true;
     }
 
     // /team join <member> <owner>
     private boolean handleJoin(CommandSender sender, String member, String owner) {
-        return false; // TODO
+        OfflinePlayer memberPlayer = this.plugin.getServer().getOfflinePlayer(member);
+        if (memberPlayer.getName() == null) {
+            this.plugin.sendConfigMessage(sender, "messages.error.playerCannotFoundErrorMessage");
+            return false;
+        }
+
+        if (this.plugin.getTeamCache().getTeam(memberPlayer.getUniqueId()) != null) {
+            this.plugin.sendConfigMessage(sender, "messages.error.teamAlreadyInTeam");
+            return false;
+        }
+
+        OfflinePlayer ownerPlayer = this.plugin.getServer().getOfflinePlayer(owner);
+        if (ownerPlayer.getName() == null) {
+            this.plugin.sendConfigMessage(sender, "messages.error.playerCannotFoundErrorMessage");
+            return false;
+        }
+
+        if (!this.plugin.getTeamDatabase().joinTeam(memberPlayer.getUniqueId(), ownerPlayer.getUniqueId())) {
+            return false;
+        }
+
+        this.plugin.sendConfigMessage(sender, "messages.teamJoinedMessage");
+        return true;
     }
 
     // /team modify <player> <modifyType> [value]
     // modifyType: name, color
     private boolean handleModify(CommandSender sender, String player, String modifyType, String value) {
-        return false; // TODO
+        OfflinePlayer offlinePlayer = this.plugin.getServer().getOfflinePlayer(player);
+        if (offlinePlayer.getName() == null) {
+            this.plugin.sendConfigMessage(sender, "messages.error.playerCannotFoundErrorMessage");
+            return false;
+        }
+
+        if (!this.plugin.getTeamDatabase().modifyTeam(offlinePlayer.getUniqueId(), modifyType, value)) {
+            return false;
+        }
+
+        this.plugin.sendConfigMessage(sender, "messages.teamModifiedMessage");
+        return true;
     }
 
     // /team create <player> <teamName>
     private boolean handleCreate(CommandSender sender, String player, String teamName) {
-        return false; // TODO
+        OfflinePlayer offlinePlayer = this.plugin.getServer().getOfflinePlayer(player);
+        if (offlinePlayer.getName() == null) {
+            this.plugin.sendConfigMessage(sender, "messages.error.playerCannotFoundErrorMessage");
+            return false;
+        }
+
+        if (this.plugin.getTeamCache().getTeam(offlinePlayer.getUniqueId()) != null) {
+            this.plugin.sendConfigMessage(sender, "messages.error.teamAlreadyInTeam");
+            return false;
+        }
+
+        if (!this.plugin.getTeamDatabase().createTeam(offlinePlayer.getUniqueId(), teamName)) {
+            return false;
+        }
+
+        this.plugin.sendConfigMessage(sender, "messages.teamCreatedMessage", Map.of("team", teamName));
+        return true;
     }
 }
