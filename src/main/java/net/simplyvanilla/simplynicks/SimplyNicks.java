@@ -104,15 +104,6 @@ public class SimplyNicks extends JavaPlugin {
                         : Component.text(playerTeam.getName()).color(NamedTextColor.NAMES.valueOr(playerTeam.getName(), NamedTextColor.WHITE));
                     return Tag.selfClosingInserting(teamPrefix);
                 })
-                .audiencePlaceholder("team_owner", (audience, ctx, queue) -> {
-                    Player player = (Player) audience;
-                    Component teamOwner = Optional.ofNullable(teamCache.getTeam(player.getUniqueId()))
-                        .map(TeamMySQL.PlayerTeam::getOwner)
-                        .map(owner -> Bukkit.getOfflinePlayer(owner).getName())
-                        .map(Component::text)
-                        .orElse(Component.text(""));
-                    return Tag.selfClosingInserting(teamOwner);
-                })
                 .build()
                 .register();
         }

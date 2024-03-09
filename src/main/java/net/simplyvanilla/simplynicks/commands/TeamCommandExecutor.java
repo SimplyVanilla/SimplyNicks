@@ -33,44 +33,43 @@ public class TeamCommandExecutor implements CommandExecutor {
         String subCommand = args[0];
         switch (subCommand.toLowerCase(Locale.ROOT)) {
             case "create": {
-                if (args.length < 3) {
+                if (args.length < 2) {
                     return false;
                 }
-                String player = args[1];
-                String teamName = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
-                return handleCreate(sender, player, teamName);
+                String name = args[1];
+                return handleCreate(sender, name);
             }
             case "modify": {
                 if (args.length < 3) {
                     return false;
                 }
-                String player = args[1];
+                String name = args[1];
                 String modifyType = args[2];
                 String value = args.length > 3 ? String.join(" ", Arrays.copyOfRange(args, 3, args.length)) : "";
-                return handleModify(sender, player, modifyType, value);
+                return handleModify(sender, name, modifyType, value);
             }
             case "join": {
                 if (args.length < 3) {
                     return false;
                 }
                 String member = args[1];
-                String owner = args[2];
-                return handleJoin(sender, member, owner);
+                String name = args[2];
+                return handleJoin(sender, member, name);
             }
             case "leave": {
                 if (args.length < 3) {
                     return false;
                 }
                 String leaver = args[1];
-                String owner = args[2];
-                return handleLeave(sender, leaver, owner);
+                String name = args[2];
+                return handleLeave(sender, leaver, name);
             }
             case "delete":
                 if (args.length < 2) {
                     return false;
                 }
-                String player = args[1];
-                return handleDelete(sender, player);
+                String name = args[1];
+                return handleDelete(sender, name);
         }
 
         return false;
@@ -85,26 +84,14 @@ public class TeamCommandExecutor implements CommandExecutor {
         }
     }
 
-    // /team delete <player>
-    private boolean handleDelete(CommandSender sender, String player) {
-        OfflinePlayer offlinePlayer = getOfflinePlayer(player);
-        if (offlinePlayer.getName() == null) {
-            this.plugin.sendConfigMessage(sender, "messages.error.playerCannotFoundErrorMessage");
+    // /team delete <name>
+    private boolean handleDelete(CommandSender sender, String name) {
+        if (!this.plugin.getTeamCache().isTeamExists(name)) {
+            this.plugin.sendConfigMessage(sender, "messages.error.teamNotFound");
             return false;
         }
 
-        TeamMySQL.PlayerTeam playerTeam = this.plugin.getTeamCache().getTeam(offlinePlayer.getUniqueId());
-        if (playerTeam == null) {
-            this.plugin.sendConfigMessage(sender, "messages.error.teamNotInTeam");
-            return false;
-        }
-
-        if (!playerTeam.isOwner()) {
-            this.plugin.sendConfigMessage(sender, "messages.error.teamNotOwner");
-            return false;
-        }
-
-        if (!this.plugin.getTeamDatabase().deleteTeam(offlinePlayer.getUniqueId())) {
+        if (!this.plugin.getTeamDatabase().deleteTeam(name)) {
             return false;
         }
 
@@ -113,25 +100,25 @@ public class TeamCommandExecutor implements CommandExecutor {
     }
 
     // /team leave <leaver> <owner>
-    private boolean handleLeave(CommandSender sender, String leaver, String owner) {
+    private boolean handleLeave(CommandSender sender, String leaver, String name) {
         OfflinePlayer leaverPlayer = getOfflinePlayer(leaver);
         if (leaverPlayer.getName() == null) {
             this.plugin.sendConfigMessage(sender, "messages.error.playerCannotFoundErrorMessage");
             return false;
         }
 
-        if (this.plugin.getTeamCache().getTeam(leaverPlayer.getUniqueId()) == null) {
+        TeamMySQL.PlayerTeam playerTeam = this.plugin.getTeamCache().getTeam(leaverPlayer.getUniqueId());
+        if (playerTeam == null) {
             this.plugin.sendConfigMessage(sender, "messages.error.teamNotInTeam");
             return false;
         }
 
-        OfflinePlayer ownerPlayer = getOfflinePlayer(owner);
-        if (ownerPlayer.getName() == null) {
-            this.plugin.sendConfigMessage(sender, "messages.error.playerCannotFoundErrorMessage");
+        if (!playerTeam.getName().equals(name)) {
+            this.plugin.sendConfigMessage(sender, "messages.error.teamNotInTeam");
             return false;
         }
 
-        if (!this.plugin.getTeamDatabase().leaveTeam(leaverPlayer.getUniqueId(), ownerPlayer.getUniqueId())) {
+        if (!this.plugin.getTeamDatabase().leaveTeam(leaverPlayer.getUniqueId(), name)) {
             return false;
         }
 
@@ -139,8 +126,8 @@ public class TeamCommandExecutor implements CommandExecutor {
         return true;
     }
 
-    // /team join <member> <owner>
-    private boolean handleJoin(CommandSender sender, String member, String owner) {
+    // /team join <member> <name>
+    private boolean handleJoin(CommandSender sender, String member, String name) {
         OfflinePlayer memberPlayer = getOfflinePlayer(member);
         if (memberPlayer.getName() == null) {
             this.plugin.sendConfigMessage(sender, "messages.error.playerCannotFoundErrorMessage");
@@ -152,19 +139,12 @@ public class TeamCommandExecutor implements CommandExecutor {
             return false;
         }
 
-        OfflinePlayer ownerPlayer = getOfflinePlayer(owner);
-        if (ownerPlayer.getName() == null) {
-            this.plugin.sendConfigMessage(sender, "messages.error.playerCannotFoundErrorMessage");
-            return false;
-        }
-
-        TeamMySQL.PlayerTeam playerTeam = this.plugin.getTeamCache().getTeam(ownerPlayer.getUniqueId());
-        if (playerTeam == null || !playerTeam.isOwner()) {
+        if (!this.plugin.getTeamCache().isTeamExists(name)) {
             this.plugin.sendConfigMessage(sender, "messages.error.teamNotFound");
             return false;
         }
 
-        if (!this.plugin.getTeamDatabase().joinTeam(memberPlayer.getUniqueId(), ownerPlayer.getUniqueId())) {
+        if (!this.plugin.getTeamDatabase().joinTeam(memberPlayer.getUniqueId(), name)) {
             return false;
         }
 
@@ -172,27 +152,15 @@ public class TeamCommandExecutor implements CommandExecutor {
         return true;
     }
 
-    // /team modify <player> <modifyType> [value]
+    // /team modify <name> <modifyType> [value]
     // modifyType: name, color
-    private boolean handleModify(CommandSender sender, String player, String modifyType, String value) {
-        OfflinePlayer offlinePlayer = getOfflinePlayer(player);
-        if (offlinePlayer.getName() == null) {
-            this.plugin.sendConfigMessage(sender, "messages.error.playerCannotFoundErrorMessage");
+    private boolean handleModify(CommandSender sender, String name, String modifyType, String value) {
+        if (!this.plugin.getTeamCache().isTeamExists(name)) {
+            this.plugin.sendConfigMessage(sender, "messages.error.teamNotFound");
             return false;
         }
 
-        TeamMySQL.PlayerTeam playerTeam = this.plugin.getTeamCache().getTeam(offlinePlayer.getUniqueId());
-        if (playerTeam == null) {
-            this.plugin.sendConfigMessage(sender, "messages.error.teamNotInTeam");
-            return false;
-        }
-
-        if (!playerTeam.isOwner()) {
-            this.plugin.sendConfigMessage(sender, "messages.error.teamNotOwner");
-            return false;
-        }
-
-        if (!this.plugin.getTeamDatabase().modifyTeam(offlinePlayer.getUniqueId(), modifyType, value)) {
+        if (!this.plugin.getTeamDatabase().modifyTeam(name, modifyType, value)) {
             return false;
         }
 
@@ -200,20 +168,14 @@ public class TeamCommandExecutor implements CommandExecutor {
         return true;
     }
 
-    // /team create <player> <teamName>
-    private boolean handleCreate(CommandSender sender, String player, String teamName) {
-        OfflinePlayer offlinePlayer = getOfflinePlayer(player);
-        if (offlinePlayer.getName() == null) {
-            this.plugin.sendConfigMessage(sender, "messages.error.playerCannotFoundErrorMessage");
+    // /team create <name>
+    private boolean handleCreate(CommandSender sender, String teamName) {
+        if (this.plugin.getTeamCache().isTeamExists(teamName)) {
+            this.plugin.sendConfigMessage(sender, "messages.error.teamAlreadyExists");
             return false;
         }
 
-        if (this.plugin.getTeamCache().getTeam(offlinePlayer.getUniqueId()) != null) {
-            this.plugin.sendConfigMessage(sender, "messages.error.teamAlreadyInTeam");
-            return false;
-        }
-
-        if (!this.plugin.getTeamDatabase().createTeam(offlinePlayer.getUniqueId(), teamName)) {
+        if (!this.plugin.getTeamDatabase().createTeam(teamName)) {
             return false;
         }
 

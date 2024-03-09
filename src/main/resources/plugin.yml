@@ -26,11 +26,11 @@ commands:
   team:
     description: Commands for managing teams
     usage: |
-           /team create <player> <team> - Create a team
-           /team delete <player> - Delete a team
-           /team modify <player> <name|color> <value> - Modify a team
-           /team join <player> <owner> - Join a team
-           /team leave <player> <owner> - Leave a team
+           /team create <team> - Create a team
+           /team delete <team> - Delete a team
+           /team modify <team> <name|color> <value> - Modify a team
+           /team join <player> <team> - Join a team
+           /team leave <player> <team> - Leave a team
     permission: simplynicks.team
 
 permissions:
