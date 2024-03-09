@@ -1,6 +1,10 @@
 package net.simplyvanilla.simplynicks;
 
+import io.github.miniplaceholders.api.Expansion;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -12,7 +16,9 @@ import net.simplyvanilla.simplynicks.database.MySQL;
 import net.simplyvanilla.simplynicks.database.TeamCache;
 import net.simplyvanilla.simplynicks.database.TeamMySQL;
 import net.simplyvanilla.simplynicks.event.PlayerEvents;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.HashMap;
@@ -74,6 +80,42 @@ public class SimplyNicks extends JavaPlugin {
         this.getCommand("realname").setExecutor(new RealnameCommandExecutor(this));
         this.getCommand("team").setExecutor(new TeamCommandExecutor(this));
         colors = this.getConfig().getStringList("colors");
+
+        if (Bukkit.getPluginManager().isPluginEnabled("MiniPlaceholders")) {
+            Expansion.builder("simplynicks")
+                .filter(Player.class)
+                .audiencePlaceholder("team_name", (audience, ctx, queue) -> {
+                    Player player = (Player) audience;
+                    TeamMySQL.PlayerTeam playerTeam = teamCache.getTeam(player.getUniqueId());
+                    Component teamName = playerTeam == null ? Component.text("") : Component.text(playerTeam.getName());
+                    return Tag.selfClosingInserting(teamName);
+                })
+                .audiencePlaceholder("team_color", (audience, ctx, queue) -> {
+                    Player player = (Player) audience;
+                    TeamMySQL.PlayerTeam playerTeam = teamCache.getTeam(player.getUniqueId());
+                    Component teamColor = playerTeam == null ? Component.text("") : Component.text(playerTeam.getColor());
+                    return Tag.selfClosingInserting(teamColor);
+                })
+                .audiencePlaceholder("team_prefix", (audience, ctx, queue) -> {
+                    Player player = (Player) audience;
+                    TeamMySQL.PlayerTeam playerTeam = teamCache.getTeam(player.getUniqueId());
+                    Component teamPrefix = playerTeam == null
+                        ? Component.text("")
+                        : Component.text(playerTeam.getName()).color(NamedTextColor.NAMES.valueOr(playerTeam.getName(), NamedTextColor.WHITE));
+                    return Tag.selfClosingInserting(teamPrefix);
+                })
+                .audiencePlaceholder("team_owner", (audience, ctx, queue) -> {
+                    Player player = (Player) audience;
+                    Component teamOwner = Optional.ofNullable(teamCache.getTeam(player.getUniqueId()))
+                        .map(TeamMySQL.PlayerTeam::getOwner)
+                        .map(owner -> Bukkit.getOfflinePlayer(owner).getName())
+                        .map(Component::text)
+                        .orElse(Component.text(""));
+                    return Tag.selfClosingInserting(teamOwner);
+                })
+                .build()
+                .register();
+        }
     }
 
     @Override

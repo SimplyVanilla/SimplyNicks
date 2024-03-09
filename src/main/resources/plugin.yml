@@ -2,6 +2,8 @@ main: net.simplyvanilla.simplynicks.SimplyNicks
 name: SimplyNicks
 version: @version@
 api-version: 1.19
+softdepend:
+  - MiniPlaceholders
 
 author: Simply Vanilla
 website: https://github.com/SimplyVanilla/SimplyNicks
