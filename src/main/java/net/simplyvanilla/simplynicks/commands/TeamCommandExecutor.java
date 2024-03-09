@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 
 public class TeamCommandExecutor implements CommandExecutor {
     private final SimplyNicks plugin;
@@ -71,9 +72,18 @@ public class TeamCommandExecutor implements CommandExecutor {
         return false;
     }
 
+    private OfflinePlayer getOfflinePlayer(String input) {
+        try {
+            UUID uuid = UUID.fromString(input);
+            return this.plugin.getServer().getOfflinePlayer(uuid);
+        } catch (IllegalArgumentException e) {
+            return this.plugin.getServer().getOfflinePlayer(input);
+        }
+    }
+
     // /team delete <player>
     private boolean handleDelete(CommandSender sender, String player) {
-        OfflinePlayer offlinePlayer = this.plugin.getServer().getOfflinePlayer(player);
+        OfflinePlayer offlinePlayer = getOfflinePlayer(player);
         if (offlinePlayer.getName() == null) {
             this.plugin.sendConfigMessage(sender, "messages.error.playerCannotFoundErrorMessage");
             return false;
@@ -100,7 +110,7 @@ public class TeamCommandExecutor implements CommandExecutor {
 
     // /team leave <leaver> <owner>
     private boolean handleLeave(CommandSender sender, String leaver, String owner) {
-        OfflinePlayer leaverPlayer = this.plugin.getServer().getOfflinePlayer(leaver);
+        OfflinePlayer leaverPlayer = getOfflinePlayer(leaver);
         if (leaverPlayer.getName() == null) {
             this.plugin.sendConfigMessage(sender, "messages.error.playerCannotFoundErrorMessage");
             return false;
@@ -111,7 +121,7 @@ public class TeamCommandExecutor implements CommandExecutor {
             return false;
         }
 
-        OfflinePlayer ownerPlayer = this.plugin.getServer().getOfflinePlayer(owner);
+        OfflinePlayer ownerPlayer = getOfflinePlayer(owner);
         if (ownerPlayer.getName() == null) {
             this.plugin.sendConfigMessage(sender, "messages.error.playerCannotFoundErrorMessage");
             return false;
@@ -127,7 +137,7 @@ public class TeamCommandExecutor implements CommandExecutor {
 
     // /team join <member> <owner>
     private boolean handleJoin(CommandSender sender, String member, String owner) {
-        OfflinePlayer memberPlayer = this.plugin.getServer().getOfflinePlayer(member);
+        OfflinePlayer memberPlayer = getOfflinePlayer(member);
         if (memberPlayer.getName() == null) {
             this.plugin.sendConfigMessage(sender, "messages.error.playerCannotFoundErrorMessage");
             return false;
@@ -138,7 +148,7 @@ public class TeamCommandExecutor implements CommandExecutor {
             return false;
         }
 
-        OfflinePlayer ownerPlayer = this.plugin.getServer().getOfflinePlayer(owner);
+        OfflinePlayer ownerPlayer = getOfflinePlayer(owner);
         if (ownerPlayer.getName() == null) {
             this.plugin.sendConfigMessage(sender, "messages.error.playerCannotFoundErrorMessage");
             return false;
@@ -161,7 +171,7 @@ public class TeamCommandExecutor implements CommandExecutor {
     // /team modify <player> <modifyType> [value]
     // modifyType: name, color
     private boolean handleModify(CommandSender sender, String player, String modifyType, String value) {
-        OfflinePlayer offlinePlayer = this.plugin.getServer().getOfflinePlayer(player);
+        OfflinePlayer offlinePlayer = getOfflinePlayer(player);
         if (offlinePlayer.getName() == null) {
             this.plugin.sendConfigMessage(sender, "messages.error.playerCannotFoundErrorMessage");
             return false;
@@ -188,7 +198,7 @@ public class TeamCommandExecutor implements CommandExecutor {
 
     // /team create <player> <teamName>
     private boolean handleCreate(CommandSender sender, String player, String teamName) {
-        OfflinePlayer offlinePlayer = this.plugin.getServer().getOfflinePlayer(player);
+        OfflinePlayer offlinePlayer = getOfflinePlayer(player);
         if (offlinePlayer.getName() == null) {
             this.plugin.sendConfigMessage(sender, "messages.error.playerCannotFoundErrorMessage");
             return false;
