@@ -8,7 +8,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
@@ -45,7 +44,7 @@ public class TeamCommandExecutor implements CommandExecutor {
                 }
                 String name = args[1];
                 String modifyType = args[2];
-                String value = args.length > 3 ? String.join(" ", Arrays.copyOfRange(args, 3, args.length)) : "";
+                String value = args.length > 3 ? args[3] : "";
                 return handleModify(sender, name, modifyType, value);
             }
             case "join": {
