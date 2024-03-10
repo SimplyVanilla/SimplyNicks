@@ -31,14 +31,19 @@ public class TeamCommandExecutor implements CommandExecutor {
             return false;
         }
 
-        String subCommand = args[0];
-        switch (subCommand.toLowerCase(Locale.ROOT)) {
+        String subCommand = args[0].toLowerCase(Locale.ROOT);
+        switch (subCommand) {
+            case "delete":
             case "create": {
                 if (args.length < 2) {
                     return false;
                 }
-                String name = args[1];
-                return handleCreate(sender, name);
+                if (subCommand.equals("delete")) {
+                    handleDelete(sender, args[1]);
+                } else {
+                    handleCreate(sender, args[1]);
+                }
+                return true;
             }
             case "modify": {
                 if (args.length < 3) {
@@ -47,30 +52,23 @@ public class TeamCommandExecutor implements CommandExecutor {
                 String name = args[1];
                 String modifyType = args[2];
                 String value = args.length > 3 ? args[3] : "";
-                return handleModify(sender, name, modifyType, value);
+                handleModify(sender, name, modifyType, value);
+                return true;
             }
+            case "leave":
             case "join": {
                 if (args.length < 3) {
                     return false;
                 }
-                String member = args[1];
-                String name = args[2];
-                return handleJoin(sender, member, name);
-            }
-            case "leave": {
-                if (args.length < 3) {
-                    return false;
-                }
-                String leaver = args[1];
-                String name = args[2];
-                return handleLeave(sender, leaver, name);
-            }
-            case "delete":
-                if (args.length < 2) {
-                    return false;
-                }
                 String name = args[1];
-                return handleDelete(sender, name);
+                String member = args[2];
+                if (subCommand.equals("join")) {
+                    handleJoin(sender, member, name);
+                } else {
+                    handleLeave(sender, member, name);
+                }
+                return true;
+            }
         }
 
         return false;
@@ -89,105 +87,100 @@ public class TeamCommandExecutor implements CommandExecutor {
     }
 
     // /team delete <name>
-    private boolean handleDelete(CommandSender sender, String name) {
+    private void handleDelete(CommandSender sender, String name) {
         int teamId = this.plugin.getTeamDatabase().getTeamId(name);
         if (teamId < 0) {
             this.plugin.sendConfigMessage(sender, "messages.error.teamNotFound");
-            return false;
+            return;
         }
 
         if (!this.plugin.getTeamDatabase().deleteTeam(teamId)) {
-            return false;
+            return;
         }
 
         this.plugin.sendConfigMessage(sender, "messages.teamDeletedMessage");
-        return true;
     }
 
     // /team leave <leaver> <owner>
-    private boolean handleLeave(CommandSender sender, String leaver, String name) {
+    private void handleLeave(CommandSender sender, String leaver, String name) {
         UUID leaverId = getPlayerId(leaver);
         if (leaverId == null) {
             this.plugin.sendConfigMessage(sender, "messages.error.playerCannotFoundErrorMessage");
-            return false;
+            return;
         }
 
         TeamMySQL.PlayerTeam playerTeam = this.plugin.getTeamCache().getTeam(leaverId);
         if (playerTeam == null) {
             this.plugin.sendConfigMessage(sender, "messages.error.teamNotInTeam");
-            return false;
+            return;
         }
 
         if (!playerTeam.getName().equals(name)) {
             this.plugin.sendConfigMessage(sender, "messages.error.teamNotInTeam");
-            return false;
+            return;
         }
 
         if (!this.plugin.getTeamDatabase().leaveTeam(leaverId, playerTeam.getTeamId())) {
-            return false;
+            return;
         }
 
         this.plugin.sendConfigMessage(sender, "messages.teamLeftMessage");
-        return true;
     }
 
     // /team join <member> <name>
-    private boolean handleJoin(CommandSender sender, String member, String name) {
+    private void handleJoin(CommandSender sender, String member, String name) {
         UUID memberId = getPlayerId(member);
         if (memberId == null) {
             this.plugin.sendConfigMessage(sender, "messages.error.playerCannotFoundErrorMessage");
-            return false;
+            return;
         }
 
         if (this.plugin.getTeamCache().getTeam(memberId) != null) {
             this.plugin.sendConfigMessage(sender, "messages.error.teamAlreadyInTeam");
-            return false;
+            return;
         }
 
         int teamId = this.plugin.getTeamDatabase().getTeamId(name);
         if (teamId < 0) {
             this.plugin.sendConfigMessage(sender, "messages.error.teamNotFound");
-            return false;
+            return;
         }
 
         if (!this.plugin.getTeamDatabase().joinTeam(memberId, teamId)) {
-            return false;
+            return;
         }
 
         this.plugin.sendConfigMessage(sender, "messages.teamJoinedMessage");
-        return true;
     }
 
     // /team modify <name> <modifyType> [value]
     // modifyType: name, color
-    private boolean handleModify(CommandSender sender, String name, String modifyType, String value) {
+    private void handleModify(CommandSender sender, String name, String modifyType, String value) {
         int teamId = this.plugin.getTeamDatabase().getTeamId(name);
         if (teamId < 0) {
             this.plugin.sendConfigMessage(sender, "messages.error.teamNotFound");
-            return false;
+            return;
         }
 
         if (!this.plugin.getTeamDatabase().modifyTeam(teamId, modifyType, value)) {
-            return false;
+            return;
         }
 
         this.plugin.sendConfigMessage(sender, "messages.teamModifiedMessage");
-        return true;
     }
 
     // /team create <name>
-    private boolean handleCreate(CommandSender sender, String teamName) {
+    private void handleCreate(CommandSender sender, String teamName) {
         int teamId = this.plugin.getTeamDatabase().getTeamId(teamName);
         if (teamId >= 0) {
             this.plugin.sendConfigMessage(sender, "messages.error.teamAlreadyExists");
-            return false;
+            return;
         }
 
         if (!this.plugin.getTeamDatabase().createTeam(teamName)) {
-            return false;
+            return;
         }
 
         this.plugin.sendConfigMessage(sender, "messages.teamCreatedMessage", Map.of("team", teamName));
-        return true;
     }
 }

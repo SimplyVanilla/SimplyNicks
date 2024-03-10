@@ -29,8 +29,8 @@ commands:
            /team create <team> - Create a team
            /team delete <team> - Delete a team
            /team modify <team> <name|color> <value> - Modify a team
-           /team join <player> <team> - Join a team
-           /team leave <player> <team> - Leave a team
+           /team join <team> <player> - Join a team
+           /team leave <team> <player> - Leave a team
     permission: simplynicks.team
 
 permissions:
