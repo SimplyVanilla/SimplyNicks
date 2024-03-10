@@ -9,6 +9,12 @@ messages:
   moderatorNickResetMessage: "Player's nick has been reset."
   realname: "<nick>'s real username is <realname>."
 
+  teamCreatedMessage: "Team <team> has been created."
+  teamModifiedMessage: "Team has been modified."
+  teamJoinedMessage: "Player have joined team."
+  teamLeftMessage: "Player have left team."
+  teamDeletedMessage: "Team has been deleted."
+
   error:
     colorPermissionErrorMessage: "Insufficient permission to use that color."
     permissionErrorMessage: "Insufficient permissions."
@@ -17,6 +23,13 @@ messages:
     nickAlreadyInUseMessage: "Nick already in use."
     nickFixedByOwnerMessage: "Your nick has been reset due to naming collision."
     nickNotFound: "Player does not have a nick."
+
+    teamNotFound: "Team not found."
+    teamAlreadyExists: "Team already exists."
+    teamCannotBeModified: "Team cannot be modified."
+    teamAlreadyInTeam: "Player already in team."
+    teamNotInTeam: "Player not in team."
+    teamNotOwner: "Player is not the owner of the team."
 
 # Check here https://minecraft.fandom.com/wiki/Formatting_codes
 colors:
@@ -29,3 +42,5 @@ database:
   username: user123
   password: pass123
   nickTableName: player_nick
+  teamTableName: team
+  playerTeamTableName: player_team

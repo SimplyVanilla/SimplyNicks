@@ -157,6 +157,5 @@ public class MySQL {
             this.plugin.getLogger().log(Level.INFO, "MySQL database is closing...");
             ex.printStackTrace();
         }
-
     }
 }

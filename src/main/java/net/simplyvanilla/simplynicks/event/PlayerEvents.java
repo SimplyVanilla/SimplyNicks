@@ -2,6 +2,7 @@ package net.simplyvanilla.simplynicks.event;
 
 import java.util.UUID;
 import net.simplyvanilla.simplynicks.SimplyNicks;
+import net.simplyvanilla.simplynicks.database.TeamMySQL;
 import net.simplyvanilla.simplynicks.util.NickUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -55,6 +56,11 @@ public class PlayerEvents implements Listener {
             if (nick != null) {
                 this.plugin.getCache().addNick(event.getPlayer().getUniqueId().toString(), nick);
                 NickUtil.applyNick(event.getPlayer(), nick);
+            }
+
+            TeamMySQL.PlayerTeam playerTeam = this.plugin.getTeamDatabase().getTeam(event.getPlayer().getUniqueId());
+            if (playerTeam != null) {
+                this.plugin.getTeamCache().addTeam(event.getPlayer().getUniqueId(), playerTeam);
             }
         };
 

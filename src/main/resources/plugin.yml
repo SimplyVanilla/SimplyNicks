@@ -2,6 +2,8 @@ main: net.simplyvanilla.simplynicks.SimplyNicks
 name: SimplyNicks
 version: @version@
 api-version: 1.19
+softdepend:
+  - MiniPlaceholders
 
 author: Simply Vanilla
 website: https://github.com/SimplyVanilla/SimplyNicks
@@ -21,6 +23,16 @@ commands:
     aliases:
       - rname
 
+  team:
+    description: Commands for managing teams
+    usage: |
+           /team create <team> - Create a team
+           /team delete <team> - Delete a team
+           /team modify <team> <name|color> <value> - Modify a team
+           /team join <player> <team> - Join a team
+           /team leave <player> <team> - Leave a team
+    permission: simplynicks.team
+
 permissions:
   simplynicks.nick:
     description: allows access to the nick and realname command
@@ -37,3 +49,7 @@ permissions:
   simplynicks.changeothers:
     description: whether the player can change other player nick
     default: op
+
+  simplynicks.team:
+    description: allows access to the team command
+    default: false
