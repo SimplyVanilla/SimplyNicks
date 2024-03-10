@@ -120,20 +120,24 @@ public class TeamMySQL {
         }
     }
 
-    public boolean joinTeam(UUID uuid, String name) {
-        int teamId;
+    private int getTeamId(String name) {
         try (PreparedStatement preparedStatement = this.connection.prepareStatement(
             String.format("SELECT `id` FROM `%s` WHERE `name` = ?", this.teamTableName)
         )) {
             preparedStatement.setString(1, name);
             var resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
-                teamId = resultSet.getInt("id");
-            } else {
-                return false;
+                return resultSet.getInt("id");
             }
         } catch (Exception ex) {
-            this.plugin.getLogger().log(Level.SEVERE, "Unable to joinTeam...", ex);
+            this.plugin.getLogger().log(Level.SEVERE, "Unable to getTeamId...", ex);
+        }
+        return -1;
+    }
+
+    public boolean joinTeam(UUID uuid, String name) {
+        int teamId = getTeamId(name);
+        if (teamId < 0) {
             return false;
         }
 
@@ -152,19 +156,8 @@ public class TeamMySQL {
     }
 
     public boolean leaveTeam(UUID uuid, String name) {
-        int teamId;
-        try (PreparedStatement preparedStatement = this.connection.prepareStatement(
-            String.format("SELECT `id` FROM `%s` WHERE name = ?", this.teamTableName)
-        )) {
-            preparedStatement.setString(1, name);
-            var resultSet = preparedStatement.executeQuery();
-            if (resultSet.next()) {
-                teamId = resultSet.getInt("id");
-            } else {
-                return false;
-            }
-        } catch (Exception ex) {
-            this.plugin.getLogger().log(Level.SEVERE, "Unable to joinTeam...", ex);
+        int teamId = getTeamId(name);
+        if (teamId < 0) {
             return false;
         }
 
