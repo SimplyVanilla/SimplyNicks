@@ -6,7 +6,10 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.logging.Level;
 
 public class TeamMySQL {
@@ -81,49 +84,7 @@ public class TeamMySQL {
         }
     }
 
-    public boolean createTeam(String name) {
-        try (PreparedStatement preparedStatement = this.connection.prepareStatement(
-            String.format("INSERT INTO `%s` (`name`, `color`) VALUES (?, ?)", this.teamTableName)
-        )) {
-            preparedStatement.setString(1, name);
-            preparedStatement.setString(2, "");
-            preparedStatement.executeUpdate();
-            return true;
-        } catch (Exception ex) {
-            this.plugin.getLogger().log(Level.SEVERE, "Unable to createTeam...", ex);
-            return false;
-        }
-    }
-
-    public boolean modifyTeam(String name, String modifyType, String value) {
-        if (!modifyType.equalsIgnoreCase("name") &&
-            !modifyType.equalsIgnoreCase("color")) {
-            return false;
-        }
-
-        try (PreparedStatement preparedStatement = this.connection.prepareStatement(
-            String.format("UPDATE `%s` SET `%s` = ? WHERE `name` = ?", this.teamTableName, modifyType.toLowerCase())
-        )) {
-            Runnable afterRun;
-            if (modifyType.equalsIgnoreCase("name")) {
-                afterRun = () -> this.plugin.getTeamCache().updateTeam(name, team -> team.setName(value));
-            } else if (modifyType.equalsIgnoreCase("color")) {
-                afterRun = () -> this.plugin.getTeamCache().updateTeam(name, team -> team.setColor(value));
-            } else {
-                return false;
-            }
-            preparedStatement.setString(1, value);
-            preparedStatement.setString(2, name);
-            preparedStatement.executeUpdate();
-            afterRun.run();
-            return true;
-        } catch (Exception ex) {
-            this.plugin.getLogger().log(Level.SEVERE, "Unable to modifyTeam...", ex);
-            return false;
-        }
-    }
-
-    private int getTeamId(String name) {
+    public int getTeamId(String name) {
         try (PreparedStatement preparedStatement = this.connection.prepareStatement(
             String.format("SELECT `id` FROM `%s` WHERE `name` = ?", this.teamTableName)
         )) {
@@ -138,12 +99,63 @@ public class TeamMySQL {
         return -1;
     }
 
-    public boolean joinTeam(UUID uuid, String name) {
-        int teamId = getTeamId(name);
-        if (teamId < 0) {
+    public boolean createTeam(String name) {
+        try (PreparedStatement preparedStatement = this.connection.prepareStatement(
+            String.format("INSERT INTO `%s` (`name`, `color`) VALUES (?, ?)", this.teamTableName)
+        )) {
+            preparedStatement.setString(1, name);
+            preparedStatement.setString(2, "");
+            preparedStatement.executeUpdate();
+            return true;
+        } catch (Exception ex) {
+            this.plugin.getLogger().log(Level.SEVERE, "Unable to createTeam...", ex);
+            return false;
+        }
+    }
+
+    public boolean deleteTeam(int teamId) {
+        try (PreparedStatement preparedStatement = this.connection.prepareStatement(
+            String.format("DELETE FROM `%s` WHERE id = ?", this.teamTableName)
+        )) {
+            preparedStatement.setInt(1, teamId);
+            preparedStatement.executeUpdate();
+            this.plugin.getTeamCache().removeTeamByTeamId(teamId);
+            return true;
+        } catch (Exception ex) {
+            this.plugin.getLogger().log(Level.SEVERE, "Unable to deleteTeam...", ex);
+            return false;
+        }
+    }
+
+    public boolean modifyTeam(int teamId, String modifyType, String value) {
+        if (!modifyType.equalsIgnoreCase("name") &&
+            !modifyType.equalsIgnoreCase("color")) {
             return false;
         }
 
+        try (PreparedStatement preparedStatement = this.connection.prepareStatement(
+            String.format("UPDATE `%s` SET `%s` = ? WHERE `id` = ?", this.teamTableName, modifyType.toLowerCase())
+        )) {
+            Runnable afterRun;
+            if (modifyType.equalsIgnoreCase("name")) {
+                afterRun = () -> this.plugin.getTeamCache().updateTeam(teamId, team -> team.setName(value));
+            } else if (modifyType.equalsIgnoreCase("color")) {
+                afterRun = () -> this.plugin.getTeamCache().updateTeam(teamId, team -> team.setColor(value));
+            } else {
+                return false;
+            }
+            preparedStatement.setString(1, value);
+            preparedStatement.setInt(2, teamId);
+            preparedStatement.executeUpdate();
+            afterRun.run();
+            return true;
+        } catch (Exception ex) {
+            this.plugin.getLogger().log(Level.SEVERE, "Unable to modifyTeam...", ex);
+            return false;
+        }
+    }
+
+    public boolean joinTeam(UUID uuid, int teamId) {
         try (PreparedStatement preparedStatement = this.connection.prepareStatement(
             String.format("INSERT INTO `%s` (`id`, `team_id`) VALUES (UUID_TO_BIN(?), ?)", this.playerTeamTableName)
         )) {
@@ -158,12 +170,7 @@ public class TeamMySQL {
         }
     }
 
-    public boolean leaveTeam(UUID uuid, String name) {
-        int teamId = getTeamId(name);
-        if (teamId < 0) {
-            return false;
-        }
-
+    public boolean leaveTeam(UUID uuid, int teamId) {
         try (PreparedStatement preparedStatement = this.connection.prepareStatement(
             String.format("DELETE FROM `%s` WHERE `id` = UUID_TO_BIN(?) AND `team_id` = ?", this.playerTeamTableName)
         )) {
@@ -178,37 +185,24 @@ public class TeamMySQL {
         }
     }
 
-    public boolean deleteTeam(String name) {
-        try (PreparedStatement preparedStatement = this.connection.prepareStatement(
-            String.format("DELETE FROM `%s` WHERE name = ?", this.teamTableName)
-        )) {
-            preparedStatement.setString(1, name);
-            preparedStatement.executeUpdate();
-            this.plugin.getTeamCache().removeTeamByName(name);
-            return true;
-        } catch (Exception ex) {
-            this.plugin.getLogger().log(Level.SEVERE, "Unable to deleteTeam...", ex);
-            return false;
-        }
-    }
-
     public Map<UUID, PlayerTeam> getAllTeams() {
         Map<UUID, PlayerTeam> teams = new HashMap<>();
 
         try (PreparedStatement preparedStatement = this.connection.prepareStatement(
             String.format(
                 """
-                    SELECT BIN_TO_UUID(pt.id) AS player_id, t.name AS team_name, t.color AS team_color
-                    FROM `%s` AS pt
-                    JOIN `%s` AS t ON pt.team_id = t.id;
-                """, this.playerTeamTableName, this.teamTableName)
+                        SELECT BIN_TO_UUID(pt.id) AS player_id, t.id AS team_id, t.name AS team_name, t.color AS team_color
+                        FROM `%s` AS pt
+                        JOIN `%s` AS t ON pt.team_id = t.id;
+                    """, this.playerTeamTableName, this.teamTableName)
         )) {
             var resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 UUID playerId = UUID.fromString(resultSet.getString("player_id"));
+                int teamId = resultSet.getInt("team_id");
                 String teamName = resultSet.getString("team_name");
                 String teamColor = resultSet.getString("team_color");
-                teams.put(playerId, new PlayerTeam(playerId, teamName, teamColor));
+                teams.put(playerId, new PlayerTeam(playerId, teamId, teamName, teamColor));
             }
         } catch (Exception ex) {
             this.plugin.getLogger().log(Level.SEVERE, "Unable to getAllTeams...", ex);
@@ -220,7 +214,7 @@ public class TeamMySQL {
     public PlayerTeam getTeam(UUID uuid) {
         try (PreparedStatement preparedStatement = this.connection.prepareStatement(
             String.format("""
-                    SELECT t.name AS team_name, t.color AS team_color
+                    SELECT t.id AS team_id, t.name AS team_name, t.color AS team_color
                     FROM `%s` AS pt
                     JOIN `%s` AS t ON pt.team_id = t.id
                     WHERE pt.id = UUID_TO_BIN(?);
@@ -229,9 +223,10 @@ public class TeamMySQL {
             preparedStatement.setString(1, uuid.toString());
             var resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
+                int teamId = resultSet.getInt("team_id");
                 String teamName = resultSet.getString("team_name");
                 String teamColor = resultSet.getString("team_color");
-                return new PlayerTeam(uuid, teamName, teamColor);
+                return new PlayerTeam(uuid, teamId, teamName, teamColor);
             }
         } catch (Exception ex) {
             this.plugin.getLogger().log(Level.SEVERE, "Unable to getTeam...", ex);
@@ -242,11 +237,13 @@ public class TeamMySQL {
 
     public static final class PlayerTeam {
         private UUID uuid;
+        private int teamId;
         private String name;
         private String color;
 
-        public PlayerTeam(UUID uuid, String name, String color) {
+        public PlayerTeam(UUID uuid, int teamId, String name, String color) {
             this.uuid = uuid;
+            this.teamId = teamId;
             this.name = name;
             this.color = color;
         }
@@ -273,6 +270,14 @@ public class TeamMySQL {
 
         public void setColor(String color) {
             this.color = color;
+        }
+
+        public int getTeamId() {
+            return teamId;
+        }
+
+        public void setTeamId(int teamId) {
+            this.teamId = teamId;
         }
     }
 }
