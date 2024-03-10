@@ -21,10 +21,6 @@ public class TeamCache {
         }
     }
 
-    public boolean isTeamExists(String name) {
-        return this.teams.values().stream().anyMatch(team -> team.getName().equals(name));
-    }
-
     public void addTeam(UUID key, TeamMySQL.PlayerTeam value) {
         this.teams.put(key, value);
     }
@@ -37,11 +33,11 @@ public class TeamCache {
         this.teams.remove(uuid);
     }
 
-    public void removeTeamByName(String name) {
-        this.teams.values().removeIf(team -> team.getName().equals(name));
+    public void removeTeamByTeamId(int teamId) {
+        this.teams.values().removeIf(team -> team.getTeamId() == teamId);
     }
 
-    public void updateTeam(String name, Consumer<TeamMySQL.PlayerTeam> consumer) {
-        this.teams.values().stream().filter(team -> team.getName().equals(name)).forEach(consumer);
+    public void updateTeam(int teamId, Consumer<TeamMySQL.PlayerTeam> consumer) {
+        this.teams.values().stream().filter(team -> team.getTeamId() == teamId).forEach(consumer);
     }
 }

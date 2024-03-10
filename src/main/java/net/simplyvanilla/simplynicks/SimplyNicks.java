@@ -101,7 +101,9 @@ public class SimplyNicks extends JavaPlugin {
                     TeamMySQL.PlayerTeam playerTeam = teamCache.getTeam(player.getUniqueId());
                     Component teamPrefix = playerTeam == null
                         ? Component.text("")
-                        : Component.text(playerTeam.getName()).color(NamedTextColor.NAMES.valueOr(playerTeam.getName(), NamedTextColor.WHITE));
+                        : Component.text(playerTeam.getName())
+                            .color(NamedTextColor.NAMES.valueOr(playerTeam.getColor(), NamedTextColor.WHITE))
+                            .append(Component.text(" "));
                     return Tag.selfClosingInserting(teamPrefix);
                 })
                 .build()
@@ -169,4 +171,3 @@ public class SimplyNicks extends JavaPlugin {
         }
     }
 }
-

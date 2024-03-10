@@ -51,5 +51,5 @@ permissions:
     default: op
 
   simplynicks.team:
-    description: allows access to the team command
-    default: false
+    description: whether the player can access the team commands
+    default: op

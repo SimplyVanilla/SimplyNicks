@@ -3,9 +3,7 @@ package net.simplyvanilla.simplynicks.commands;
 import net.simplyvanilla.simplynicks.SimplyNicks;
 import net.simplyvanilla.simplynicks.database.TeamMySQL;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
+import org.bukkit.command.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
@@ -20,8 +18,12 @@ public class TeamCommandExecutor implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (!sender.hasPermission("simplynicks.team")) {
+    public boolean onCommand(
+        @NotNull CommandSender sender,
+        @NotNull Command command,
+        @NotNull String label,
+        @NotNull String[] args) {
+        if (!(sender instanceof ConsoleCommandSender) && !(sender instanceof RemoteConsoleCommandSender)) {
             return false;
         }
 
@@ -88,12 +90,13 @@ public class TeamCommandExecutor implements CommandExecutor {
 
     // /team delete <name>
     private boolean handleDelete(CommandSender sender, String name) {
-        if (!this.plugin.getTeamCache().isTeamExists(name)) {
+        int teamId = this.plugin.getTeamDatabase().getTeamId(name);
+        if (teamId < 0) {
             this.plugin.sendConfigMessage(sender, "messages.error.teamNotFound");
             return false;
         }
 
-        if (!this.plugin.getTeamDatabase().deleteTeam(name)) {
+        if (!this.plugin.getTeamDatabase().deleteTeam(teamId)) {
             return false;
         }
 
@@ -120,7 +123,7 @@ public class TeamCommandExecutor implements CommandExecutor {
             return false;
         }
 
-        if (!this.plugin.getTeamDatabase().leaveTeam(leaverId, name)) {
+        if (!this.plugin.getTeamDatabase().leaveTeam(leaverId, playerTeam.getTeamId())) {
             return false;
         }
 
@@ -141,12 +144,13 @@ public class TeamCommandExecutor implements CommandExecutor {
             return false;
         }
 
-        if (!this.plugin.getTeamCache().isTeamExists(name)) {
+        int teamId = this.plugin.getTeamDatabase().getTeamId(name);
+        if (teamId < 0) {
             this.plugin.sendConfigMessage(sender, "messages.error.teamNotFound");
             return false;
         }
 
-        if (!this.plugin.getTeamDatabase().joinTeam(memberId, name)) {
+        if (!this.plugin.getTeamDatabase().joinTeam(memberId, teamId)) {
             return false;
         }
 
@@ -157,12 +161,13 @@ public class TeamCommandExecutor implements CommandExecutor {
     // /team modify <name> <modifyType> [value]
     // modifyType: name, color
     private boolean handleModify(CommandSender sender, String name, String modifyType, String value) {
-        if (!this.plugin.getTeamCache().isTeamExists(name)) {
+        int teamId = this.plugin.getTeamDatabase().getTeamId(name);
+        if (teamId < 0) {
             this.plugin.sendConfigMessage(sender, "messages.error.teamNotFound");
             return false;
         }
 
-        if (!this.plugin.getTeamDatabase().modifyTeam(name, modifyType, value)) {
+        if (!this.plugin.getTeamDatabase().modifyTeam(teamId, modifyType, value)) {
             return false;
         }
 
@@ -172,7 +177,8 @@ public class TeamCommandExecutor implements CommandExecutor {
 
     // /team create <name>
     private boolean handleCreate(CommandSender sender, String teamName) {
-        if (this.plugin.getTeamCache().isTeamExists(teamName)) {
+        int teamId = this.plugin.getTeamDatabase().getTeamId(teamName);
+        if (teamId >= 0) {
             this.plugin.sendConfigMessage(sender, "messages.error.teamAlreadyExists");
             return false;
         }
