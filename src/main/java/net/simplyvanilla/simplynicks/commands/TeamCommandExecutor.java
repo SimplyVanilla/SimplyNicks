@@ -33,8 +33,7 @@ public class TeamCommandExecutor implements CommandExecutor {
 
         String subCommand = args[0].toLowerCase(Locale.ROOT);
         switch (subCommand) {
-            case "remove":
-            case "add": {
+            case "remove", "add":
                 if (args.length < 2) {
                     return false;
                 }
@@ -44,31 +43,24 @@ public class TeamCommandExecutor implements CommandExecutor {
                     handleCreate(sender, args[1]);
                 }
                 return true;
-            }
-            case "modify": {
+
+            case "modify":
                 if (args.length < 3) {
                     return false;
                 }
-                String name = args[1];
-                String modifyType = args[2];
-                String value = args.length > 3 ? args[3] : "";
-                handleModify(sender, name, modifyType, value);
+                handleModify(sender, args[1], args[2], args.length > 3 ? args[3] : "");
                 return true;
-            }
-            case "leave":
-            case "join": {
+
+            case "leave", "join":
                 if (args.length < 3) {
                     return false;
                 }
-                String name = args[1];
-                String member = args[2];
                 if (subCommand.equals("join")) {
-                    handleJoin(sender, member, name);
+                    handleJoin(sender, args[2], args[1]);
                 } else {
-                    handleLeave(sender, member, name);
+                    handleLeave(sender, args[2], args[1]);
                 }
                 return true;
-            }
         }
 
         return false;
