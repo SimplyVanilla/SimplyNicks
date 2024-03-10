@@ -83,13 +83,10 @@ public class TeamMySQL {
 
     public boolean createTeam(String name) {
         try (PreparedStatement preparedStatement = this.connection.prepareStatement(
-            """
-                    INSERT INTO ? (name, color) VALUES (?, ?);
-                """
+            String.format("INSERT INTO `%s` (`name`, `color`) VALUES (?, ?)", this.teamTableName)
         )) {
-            preparedStatement.setString(1, this.teamTableName);
-            preparedStatement.setString(2, name);
-            preparedStatement.setString(3, "");
+            preparedStatement.setString(1, name);
+            preparedStatement.setString(2, "");
             preparedStatement.executeUpdate();
             return true;
         } catch (Exception ex) {
@@ -100,23 +97,20 @@ public class TeamMySQL {
 
     public boolean modifyTeam(String name, String modifyType, String value) {
         try (PreparedStatement preparedStatement = this.connection.prepareStatement(
-            """
-                    UPDATE ? SET ? = ? WHERE name = ?;
-                """
+            String.format("UPDATE `%s` SET ? = ? WHERE `name` = ?", this.teamTableName)
         )) {
-            preparedStatement.setString(1, this.teamTableName);
             Runnable afterRun;
             if (modifyType.equalsIgnoreCase("name")) {
-                preparedStatement.setString(2, "name");
+                preparedStatement.setString(1, "name");
                 afterRun = () -> this.plugin.getTeamCache().updateTeam(name, team -> team.setName(value));
             } else if (modifyType.equalsIgnoreCase("color")) {
-                preparedStatement.setString(2, "color");
+                preparedStatement.setString(1, "color");
                 afterRun = () -> this.plugin.getTeamCache().updateTeam(name, team -> team.setColor(value));
             } else {
                 return false;
             }
-            preparedStatement.setString(3, value);
-            preparedStatement.setString(4, name);
+            preparedStatement.setString(2, value);
+            preparedStatement.setString(3, name);
             preparedStatement.executeUpdate();
             afterRun.run();
             return true;
@@ -129,12 +123,9 @@ public class TeamMySQL {
     public boolean joinTeam(UUID uuid, String name) {
         int teamId;
         try (PreparedStatement preparedStatement = this.connection.prepareStatement(
-            """
-                    SELECT id FROM ? WHERE name = ?;
-                """
+            String.format("SELECT `id` FROM `%s` WHERE `name` = ?", this.teamTableName)
         )) {
-            preparedStatement.setString(1, this.teamTableName);
-            preparedStatement.setString(2, name);
+            preparedStatement.setString(1, name);
             var resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
                 teamId = resultSet.getInt("id");
@@ -147,13 +138,10 @@ public class TeamMySQL {
         }
 
         try (PreparedStatement preparedStatement = this.connection.prepareStatement(
-            """
-                    INSERT INTO ? (id, team_id) VALUES (UUID_TO_BIN(?), ?);
-                """
+            String.format("INSERT INTO `%s` (`id`, `team_id`) VALUES (UUID_TO_BIN(?), ?)", this.playerTeamTableName)
         )) {
-            preparedStatement.setString(1, this.playerTeamTableName);
-            preparedStatement.setString(2, uuid.toString());
-            preparedStatement.setInt(3, teamId);
+            preparedStatement.setString(1, uuid.toString());
+            preparedStatement.setInt(2, teamId);
             preparedStatement.executeUpdate();
             this.plugin.getTeamCache().addTeam(uuid, getTeam(uuid));
             return true;
@@ -166,12 +154,9 @@ public class TeamMySQL {
     public boolean leaveTeam(UUID uuid, String name) {
         int teamId;
         try (PreparedStatement preparedStatement = this.connection.prepareStatement(
-            """
-                    SELECT id FROM ? WHERE name = ?;
-                """
+            String.format("SELECT `id` FROM `%s` WHERE name = ?", this.teamTableName)
         )) {
-            preparedStatement.setString(1, this.teamTableName);
-            preparedStatement.setString(2, name);
+            preparedStatement.setString(1, name);
             var resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
                 teamId = resultSet.getInt("id");
@@ -184,13 +169,10 @@ public class TeamMySQL {
         }
 
         try (PreparedStatement preparedStatement = this.connection.prepareStatement(
-            """
-                    DELETE FROM ? WHERE id = UUID_TO_BIN(?) AND team_id = ?;
-                """
+            String.format("DELETE FROM `%s` WHERE `id` = UUID_TO_BIN(?) AND `team_id` = ?", this.playerTeamTableName)
         )) {
-            preparedStatement.setString(1, this.playerTeamTableName);
-            preparedStatement.setString(2, uuid.toString());
-            preparedStatement.setInt(3, teamId);
+            preparedStatement.setString(1, uuid.toString());
+            preparedStatement.setInt(2, teamId);
             preparedStatement.executeUpdate();
             this.plugin.getTeamCache().removeTeam(uuid);
             return true;
@@ -202,12 +184,9 @@ public class TeamMySQL {
 
     public boolean deleteTeam(String name) {
         try (PreparedStatement preparedStatement = this.connection.prepareStatement(
-            """
-                    DELETE FROM ? WHERE name = ?;
-                """
+            String.format("DELETE FROM `%s` WHERE name = ?", this.teamTableName)
         )) {
-            preparedStatement.setString(1, this.teamTableName);
-            preparedStatement.setString(2, name);
+            preparedStatement.setString(1, name);
             preparedStatement.executeUpdate();
             this.plugin.getTeamCache().removeTeamByName(name);
             return true;
@@ -221,14 +200,13 @@ public class TeamMySQL {
         Map<UUID, PlayerTeam> teams = new HashMap<>();
 
         try (PreparedStatement preparedStatement = this.connection.prepareStatement(
-            """
-                SELECT BIN_TO_UUID(pt.id) AS player_id, t.name AS team_name, t.color AS team_color
-                FROM `?` AS pt
-                JOIN `?` AS t ON pt.team_id = t.id;
+            String.format(
                 """
+                    SELECT BIN_TO_UUID(pt.id) AS player_id, t.name AS team_name, t.color AS team_color
+                    FROM `%s` AS pt
+                    JOIN `%s` AS t ON pt.team_id = t.id;
+                """, this.playerTeamTableName, this.teamTableName)
         )) {
-            preparedStatement.setString(1, this.playerTeamTableName);
-            preparedStatement.setString(2, this.teamTableName);
             var resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 UUID playerId = UUID.fromString(resultSet.getString("player_id"));
@@ -245,16 +223,14 @@ public class TeamMySQL {
 
     public PlayerTeam getTeam(UUID uuid) {
         try (PreparedStatement preparedStatement = this.connection.prepareStatement(
-            """
-                SELECT t.name AS team_name, t.color AS team_color
-                FROM `?` AS pt
-                JOIN `?` AS t ON pt.team_id = t.id
-                WHERE pt.id = UUID_TO_BIN(?);
-                """
+            String.format("""
+                    SELECT t.name AS team_name, t.color AS team_color
+                    FROM `%s` AS pt
+                    JOIN `%s` AS t ON pt.team_id = t.id
+                    WHERE pt.id = UUID_TO_BIN(?);
+                """, this.playerTeamTableName, this.teamTableName)
         )) {
-            preparedStatement.setString(1, this.playerTeamTableName);
-            preparedStatement.setString(2, this.teamTableName);
-            preparedStatement.setString(3, uuid.toString());
+            preparedStatement.setString(1, uuid.toString());
             var resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
                 String teamName = resultSet.getString("team_name");
