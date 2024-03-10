@@ -30,33 +30,32 @@ public class TeamMySQL {
                 this.plugin.getConfig().getString("database.username"),
                 this.plugin.getConfig().getString("database.password"));
 
-            PreparedStatement teamTableCheckQuery = this.connection.prepareStatement(
+            this.statement = this.connection.createStatement();
+
+            String teamTableCheckQuery = String.format(
                 """
-                        CREATE TABLE IF NOT EXISTS ? (
+                        CREATE TABLE IF NOT EXISTS `%s` (
                             `id` INT NOT NULL AUTO_INCREMENT,
                             `name` varchar(256) NOT NULL,
                             `color` varchar(256) NOT NULL,
                             PRIMARY KEY (`id`),
                             UNIQUE INDEX `name` (`name`)
                         );
-                    """
+                    """, this.teamTableName
             );
-            teamTableCheckQuery.setString(1, this.teamTableName);
-            teamTableCheckQuery.executeUpdate();
+            this.statement.executeUpdate(teamTableCheckQuery);
 
-            PreparedStatement playerTeamTableCheckQuery = this.connection.prepareStatement(
+            String playerTeamTableCheckQuery = String.format(
                 """
-                        CREATE TABLE IF NOT EXISTS ? (
+                        CREATE TABLE IF NOT EXISTS `%s` (
                             `id` BINARY(16) NOT NULL,
                             `team_id` INT NOT NULL,
                             PRIMARY KEY (`id`),
-                            FOREIGN KEY (`team_id`) REFERENCES ?(`id`) ON DELETE CASCADE
+                            FOREIGN KEY (`team_id`) REFERENCES `%s`(`id`) ON DELETE CASCADE
                         );
-                    """
+                    """, this.playerTeamTableName, this.teamTableName
             );
-            playerTeamTableCheckQuery.setString(1, this.playerTeamTableName);
-            playerTeamTableCheckQuery.setString(2, this.teamTableName);
-            playerTeamTableCheckQuery.executeUpdate();
+            this.statement.executeUpdate(playerTeamTableCheckQuery);
 
             this.plugin.getLogger().log(Level.INFO, "Connected to the MySQL server!");
         } catch (Exception ex) {
