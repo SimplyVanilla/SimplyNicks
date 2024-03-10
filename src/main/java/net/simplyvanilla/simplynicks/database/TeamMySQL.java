@@ -34,9 +34,10 @@ public class TeamMySQL {
                 """
                         CREATE TABLE IF NOT EXISTS ? (
                             `id` INT NOT NULL AUTO_INCREMENT,
-                            `name` varchar(256) NOT NULL UNIQUE,
+                            `name` varchar(256) NOT NULL,
                             `color` varchar(256) NOT NULL,
-                            PRIMARY KEY (`id`)
+                            PRIMARY KEY (`id`),
+                            UNIQUE INDEX `name` (`name`)
                         );
                     """
             );
