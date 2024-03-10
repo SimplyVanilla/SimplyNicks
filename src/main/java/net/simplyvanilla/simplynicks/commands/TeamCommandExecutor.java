@@ -157,11 +157,6 @@ public class TeamCommandExecutor implements CommandExecutor {
     // /team modify <name> <modifyType> [value]
     // modifyType: name, color
     private boolean handleModify(CommandSender sender, String name, String modifyType, String value) {
-        if (!this.plugin.getTeamCache().isTeamExists(name)) {
-            this.plugin.sendConfigMessage(sender, "messages.error.teamNotFound");
-            return false;
-        }
-
         if (!this.plugin.getTeamDatabase().modifyTeam(name, modifyType, value)) {
             return false;
         }
