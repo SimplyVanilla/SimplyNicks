@@ -96,21 +96,24 @@ public class TeamMySQL {
     }
 
     public boolean modifyTeam(String name, String modifyType, String value) {
+        if (!modifyType.equalsIgnoreCase("name") &&
+            !modifyType.equalsIgnoreCase("color")) {
+            return false;
+        }
+
         try (PreparedStatement preparedStatement = this.connection.prepareStatement(
-            String.format("UPDATE `%s` SET ? = ? WHERE `name` = ?", this.teamTableName)
+            String.format("UPDATE `%s` SET `%s` = ? WHERE `name` = ?", this.teamTableName, modifyType.toLowerCase())
         )) {
             Runnable afterRun;
             if (modifyType.equalsIgnoreCase("name")) {
-                preparedStatement.setString(1, "name");
                 afterRun = () -> this.plugin.getTeamCache().updateTeam(name, team -> team.setName(value));
             } else if (modifyType.equalsIgnoreCase("color")) {
-                preparedStatement.setString(1, "color");
                 afterRun = () -> this.plugin.getTeamCache().updateTeam(name, team -> team.setColor(value));
             } else {
                 return false;
             }
-            preparedStatement.setString(2, value);
-            preparedStatement.setString(3, name);
+            preparedStatement.setString(1, value);
+            preparedStatement.setString(2, name);
             preparedStatement.executeUpdate();
             afterRun.run();
             return true;
