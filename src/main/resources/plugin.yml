@@ -26,8 +26,8 @@ commands:
   team:
     description: Commands for managing teams
     usage: |
-           /team create <team> - Create a team
-           /team delete <team> - Delete a team
+           /team add <team> - Create a team
+           /team remove <team> - Delete a team
            /team modify <team> <name|color> <value> - Modify a team
            /team join <team> <player> - Join a team
            /team leave <team> <player> - Leave a team

@@ -33,12 +33,12 @@ public class TeamCommandExecutor implements CommandExecutor {
 
         String subCommand = args[0].toLowerCase(Locale.ROOT);
         switch (subCommand) {
-            case "delete":
-            case "create": {
+            case "remove":
+            case "add": {
                 if (args.length < 2) {
                     return false;
                 }
-                if (subCommand.equals("delete")) {
+                if (subCommand.equals("remove")) {
                     handleDelete(sender, args[1]);
                 } else {
                     handleCreate(sender, args[1]);
